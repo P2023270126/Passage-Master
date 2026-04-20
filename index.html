@@ -131,10 +131,34 @@
     <button onclick="showScreen('menu-screen')">返回選單</button>
 </div>
 
-<!-- >>> 在這裡插入 Proofread 畫面 <<< -->
+<!-- Proofread 畫面 -->
 <div id="proofread-screen" class="screen" style="display:none;">
-    <h2 id="proofread-title">Proofread Mode</h2>
-    <!-- ... 中間省略，貼上我上一則給你的 Proofread HTML 代碼 ... -->
+    <h2>Proofread Mode</h2>
+    
+    <!-- 類別篩選器 (對應 updateCategoryDropdown) -->
+    <select id="proofread-category-filter" onchange="filterByCategory('Proofread')">
+        <option value="all">全部類別</option>
+    </select>
+
+    <div id="proofread-sentence-display" class="word-display">
+        <!-- 這裡會由 JS 產生可點擊的單字 -->
+    </div>
+
+    <!-- 修正輸入區塊 (對應 app.js 第 263 行左右的 style.display) -->
+    <div id="correction-input-area" style="display:none; margin-top: 20px;">
+        <p>Selected: <span id="selected-wrong-word" style="font-weight:bold; color:red;"></span></p>
+        <input type="text" id="user-correction" placeholder="Enter correct word here...">
+        <button onclick="checkCorrection()">Submit</button>
+    </div>
+
+    <!-- 反饋區塊 -->
+    <div id="proofread-feedback" style="display:none; margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+        <p id="proofread-feedback-text"></p>
+        <button onclick="nextProofreadQuestion()">Next Question</button>
+    </div>
+
+    <hr>
+    <button onclick="showScreen('menu-screen')">返回選單</button>
 </div>
     
     <script src="app.js"></script>
