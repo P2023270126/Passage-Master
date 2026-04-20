@@ -73,43 +73,54 @@
         <button onclick="logout()">切換身份</button>
     </div>
 
-    <!-- Spelling 畫面 (保持原樣) -->
-    <div id="spelling-screen" class="screen" style="display:none;">
-        <h2>Spelling Game</h2>
-        <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
-        <div id="spelling-word-display" style="min-height: 50px;"></div>
-        <div id="spelling-options" class="options-grid"></div>
-        <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
-            <h3 id="feedback-text">✅ Correct!</h3>
-            <button onclick="nextSpellingQuestion()">下一題</button>
-        </div>
-        <hr>
-        <button onclick="showScreen('menu-screen')">返回選單</button>
+<!-- Spelling 畫面 -->
+<div id="spelling-screen" class="screen" style="display:none;">
+    <h2 id="spelling-title">Spelling Game</h2>
+    
+    <!-- [新增] Spelling 的類別選單 -->
+    <div class="filter-container" style="margin: 10px 0; text-align: center;">
+        <select id="spelling-category-filter" onchange="filterByCategory('Spelling')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
+            <option value="all">全部類別</option>
+        </select>
     </div>
+
+    <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
+    <div id="spelling-word-display" style="min-height: 50px;"></div>
+    <div id="spelling-options" class="options-grid"></div>
+    
+    <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
+        <h3 id="feedback-text">✅ Correct!</h3>
+        <button onclick="nextSpellingQuestion()">下一題</button>
+    </div>
+    <hr>
+    <button onclick="showScreen('menu-screen')">返回選單</button>
+</div>
 
 <!-- Rearrange 畫面 -->
 <div id="rearrange-screen" class="screen" style="display:none;">
     <h2 id="rearrange-title">Sentence Rearrange</h2>
     <p id="rearrange-hint" style="font-style: italic; color: #666;"></p>
-    
+
+    <!-- [新增] Rearrange 的類別選單 -->
+    <div class="filter-container" style="margin: 10px 0; text-align: center;">
+        <select id="rearrange-category-filter" onchange="filterByCategory('Rearrange')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
+            <option value="all">全部類別</option>
+        </select>
+    </div>
+
     <div id="rearrange-word-display" class="word-slots"></div>
     
-   <!-- [修正] 統一整合的退格按鈕區塊，帶有 ID 以便 JavaScript 控制 -->
-<div id="rearrange-undo-container" style="margin-bottom: 20px;">
-    <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
-</div>
-    
+    <div id="rearrange-undo-container" style="margin-bottom: 20px;">
+        <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
+    </div>
+
     <div id="rearrange-options" class="options-grid"></div>
 
-    <!-- 結果回饋區塊 -->
     <div id="rearrange-feedback" style="display:none; margin-top: 20px; padding: 20px; border: 2px solid #28a745; border-radius: 10px;">
         <h3 id="rearrange-feedback-text" style="color: #28a745;">✅ Excellent!</h3>
-        
-        <!-- [新增] 聽全文按鈕 -->
         <div style="margin-bottom: 15px;">
             <button id="listen-btn" class="mode-btn" style="background-color: #4A90E2;" onclick="speakSentence()">🔊 聽全文</button>
         </div>
-        
         <button class="mode-btn" onclick="nextRearrangeQuestion()">下一題</button>
     </div>
     
