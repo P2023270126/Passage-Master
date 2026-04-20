@@ -5,7 +5,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* 使用 min-height 避免內容被切掉 */
     margin: 0;
 }
 
@@ -16,9 +16,47 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     text-align: center;
     width: 90%;
-    max-width: 500px;
+    max-width: 600px; /* 稍微加大寬度以容納句子 */
 }
 
+/* --- [修正重點] Rearrange 模式專用容器 --- */
+.word-slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    align-content: flex-start;
+    
+    min-height: 150px; /* 固定最小高度 */
+    width: 100%;
+    margin: 20px 0;
+    padding: 20px;
+    
+    background-color: #fafafa;
+    border: 2px dashed #bbb; /* 灰色虛線框 */
+    border-radius: 15px;    /* 圓角 */
+    box-sizing: border-box;
+}
+
+/* 顯示在容器內的單字卡片 */
+.selected-word {
+    display: inline-block;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 其他通用樣式 --- */
 .login-container {
     display: flex;
     gap: 20px;
@@ -42,87 +80,31 @@ body {
     background-color: #357ABD;
 }
 
-.logout-btn {
-    margin-top: 20px;
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.word-slots {
-    font-size: 2rem;
-    letter-spacing: 10px;
-    margin: 20px 0;
-}
-
-.letter-btn {
-    padding: 10px 15px;
-    margin: 5px;
-    font-size: 1.2rem;
-    background-color: #eee;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-/* 遊戲按鈕的一般樣式 */
-.mode-btn {
-    padding: 12px 24px;
-    font-size: 1.1rem;
-    background-color: #28a745; /* 綠色代表開始遊戲 */
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin: 10px;
-    transition: background 0.3s;
-}
-
-.mode-btn:hover {
-    background-color: #218838;
-}
-
-/* Spelling 拼字底線格子的樣式 */
-.letter-slot {
-    display: inline-block;
-    width: 30px;
-    height: 40px;
-    margin: 0 5px;
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    border-bottom: 3px solid #333; /* 顯眼的底線 */
-    color: #4A90E2;
-}
-
-/* 字母按鈕網格容器 */
+/* 字母/單字按鈕網格 */
 .options-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
     margin: 20px auto;
-    max-width: 400px;
 }
 
-/* 單個字母按鈕樣式 */
-.letter-btn {
-    width: 45px;
-    height: 45px;
-    font-size: 1.2rem;
+/* 統一樣式：字母按鈕與單字按鈕 */
+.letter-btn, .word-btn {
+    min-width: 45px;
+    height: auto;
+    padding: 10px 15px;
+    font-size: 1.1rem;
     font-weight: bold;
     background-color: white;
     border: 2px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: all 0.2s;
 }
 
-.letter-btn:hover {
+.letter-btn:hover, .word-btn:hover {
     background-color: #f0f0f0;
     transform: translateY(-2px);
 }
@@ -133,4 +115,28 @@ body {
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
+}
+
+/* Spelling 模式底線 */
+.letter-slot {
+    display: inline-block;
+    width: 30px;
+    height: 40px;
+    margin: 0 5px;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 3px solid #333;
+    color: #4A90E2;
+}
+
+.mode-btn {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 10px;
 }
