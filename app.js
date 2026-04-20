@@ -28,6 +28,14 @@ let rearrangeState = {
     userAnswerArray: []
 };
 
+let proofreadState = {
+    currentQuestionIndex: 0,
+    correctCount: 0,
+    questions: [],
+    targetWord: "",
+    correctAnswer: ""
+};
+
 /**
  * 基礎功能：身份、資料抓取與畫面切換
  */
@@ -66,6 +74,7 @@ function processGameData(rawData) {
                     category: row.Category,
                     context: row.Context,
                     answer: row.Answer,
+                    correction: row.Correction, // [新增] 讀取修正後的單字
                     options: row.Options ? row.Options.split('|') : []
                 });
             }
@@ -230,6 +239,85 @@ function loadRearrangeQuestion() {
 }
 
 /**
+ * Proofread 模式邏輯
+ */
+function startProofreadGame() {
+    const questions = gameData.Proofread;
+    if (!questions || questions.length === 0) return alert("找不到除錯題目！");
+    
+    updateCategoryDropdown('Proofread');
+    
+    proofreadState.questions = [...questions];
+    proofreadState.currentQuestionIndex = 0;
+    proofreadState.correctCount = 0;
+    showScreen('proofread-screen');
+    loadProofreadQuestion();
+}
+
+function loadProofreadQuestion() {
+    const item = proofreadState.questions[proofreadState.currentQuestionIndex];
+    const displayArea = document.getElementById('proofread-sentence-display');
+    const inputArea = document.getElementById('correction-input-area');
+    const feedback = document.getElementById('proofread-feedback');
+    
+    inputArea.style.display = 'none';
+    feedback.style.display = 'none';
+    displayArea.innerHTML = "";
+    document.getElementById('user-correction').value = "";
+
+    // 將句子拆解成單字，並讓每個字都能點擊
+    const words = item.context.split(' ');
+    words.forEach(word => {
+        const span = document.createElement('span');
+        span.innerText = word + " ";
+        span.className = "clickable-word";
+        span.onclick = () => selectWord(word, span, item.answer, item.correction);
+        displayArea.appendChild(span);
+    });
+}
+
+function selectWord(word, element, wrongWord, rightWord) {
+    document.querySelectorAll('.clickable-word').forEach(s => s.style.backgroundColor = "transparent");
+    element.style.backgroundColor = "#ffeeba";
+    
+    document.getElementById('correction-input-area').style.display = 'block';
+    // 清除標點符號方便對齊
+    const cleanedWord = word.trim().replace(/[.,!?;:]/g, "");
+    document.getElementById('selected-wrong-word').innerText = cleanedWord;
+    
+    proofreadState.targetWord = cleanedWord;
+    proofreadState.correctAnswer = rightWord;
+}
+
+function checkCorrection() {
+    const userInp = document.getElementById('user-correction').value.trim().toLowerCase();
+    const feedback = document.getElementById('proofread-feedback');
+    const feedbackText = document.getElementById('proofread-feedback-text');
+    const item = proofreadState.questions[proofreadState.currentQuestionIndex];
+    
+    // 檢查點擊的字是否正確，且輸入的修正也正確
+    if (proofreadState.targetWord.toLowerCase() === item.answer.toLowerCase() && userInp === item.correction.toLowerCase()) {
+        feedbackText.innerText = "✅ Excellent! You fixed it!";
+        feedbackText.style.color = "#28a745";
+        proofreadState.correctCount++;
+    } else {
+        feedbackText.innerText = `❌ The error was "${item.answer}" -> "${item.correction}".`;
+        feedbackText.style.color = "#dc3545";
+    }
+    feedback.style.display = 'block';
+}
+
+function nextProofreadQuestion() {
+    proofreadState.currentQuestionIndex++;
+    if (proofreadState.currentQuestionIndex < proofreadState.questions.length) {
+        loadProofreadQuestion();
+    } else {
+        alert(`Game Over! Score: ${proofreadState.correctCount} / ${proofreadState.questions.length}`);
+        showScreen('menu-screen');
+    }
+}
+
+/**
  * 處理玩家點擊單字按鈕
  * @param {string} word - 點擊的單字
  * @param {HTMLElement} btn - 被點擊的按鈕元素
@@ -383,5 +471,10 @@ function filterByCategory(mode) {
         spellingState.currentQuestionIndex = 0;
         spellingState.correctCount = 0;
         loadSpellingQuestion();
+    } else if (mode === 'Proofread') { // [新增]
+        proofreadState.questions = filteredQuestions;
+        proofreadState.currentQuestionIndex = 0;
+        proofreadState.correctCount = 0;
+        loadProofreadQuestion();
     }
 }
