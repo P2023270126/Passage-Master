@@ -1,92 +1,87 @@
 /**
- * 程式文件：核心邏輯與資料載入
- * 功能：處理身份選擇、CSV 讀取與模式分類
+ * 程式文件：app.js (修復版與 Spelling 邏輯)
  */
 
-// 1. 設定與變數
-let currentUser = "";
-let gameData = {
-    Spelling: [],
-    Rearrange: [],
-    Proofread: [],
-    Cloze: []
-};
+// ... (保留之前的變數與 CSV_CONFIG)
 
-// 請將 YOUR_JASPER_CSV_URL 與 YOUR_JOLIE_CSV_URL 替換為你在 Google Sheets 發佈的 CSV 連結
-const CSV_CONFIG = {
-    "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv",
-    "22": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1SzwdMgvtmqJrVqawDMrf33UvA6b7C9PbCkjNaKqGLIOu-6tSGuD-EJJ1tBaTyCYMrLcJD_GSezQo/pub?output=csv"
+let spellingState = {
+    currentQuestionIndex: 0,
+    correctCount: 0,
+    questions: []
 };
 
 /**
- * 步驟 A: 選擇用戶並初始化
+ * 修復：切換身份函式
  */
-async function selectUser(userId) {
-    currentUser = userId;
-    const url = CSV_CONFIG[userId];
+function logout() {
+    // 重置所有全域狀態
+    currentUser = "";
+    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
     
-    if (!url || url.includes("YOUR_")) {
-        alert("請先在 app.js 中設定正確的 CSV 連結！");
+    // 回到登入畫面
+    showScreen('login-screen');
+    
+    // 清空歡迎文字，避免下次進入時殘留
+    document.getElementById('welcome-msg').innerText = "";
+}
+
+/**
+ * 啟動 Spelling 遊戲模式
+ */
+function startSpellingGame() {
+    const questions = gameData.Spelling;
+    if (questions.length === 0) {
+        alert("目前沒有 Spelling 的題目資料。");
         return;
     }
-
-    document.getElementById('welcome-msg').innerText = `Loading data for ${userId === '66' ? 'Jasper' : 'Jolie'}...`;
     
-    // 載入 PapaParse 並抓取資料
-    await loadData(url);
+    spellingState.questions = questions; // 可以加入 shuffleArray(questions) 隨機排序
+    spellingState.currentQuestionIndex = 0;
+    spellingState.correctCount = 0;
+    
+    showScreen('spelling-screen');
+    loadSpellingQuestion();
 }
 
 /**
- * 步驟 B: 抓取並解析 CSV
+ * 載入單個拼字題目
  */
-async function loadData(url) {
-    // 動態載入 PapaParse 庫 (如果 index.html 沒寫的話)
-    if (typeof Papa === 'undefined') {
-        const script = document.createElement('script');
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js";
-        document.head.appendChild(script);
-        await new Promise(resolve => script.onload = resolve);
+function loadSpellingQuestion() {
+    const item = spellingState.questions[spellingState.currentQuestionIndex];
+    const answer = item.answer.toLowerCase();
+    
+    // 處理句子顯示：將答案單字替換成底線，例如 "The apple is red" -> "The _____ is red"
+    const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "_____");
+    document.getElementById('spelling-sentence').innerText = displaySentence;
+    
+    // 初始化拼字區域 (顯示底線)
+    const wordDisplay = document.getElementById('spelling-word-display');
+    wordDisplay.innerHTML = "";
+    for(let i=0; i<answer.length; i++) {
+        const span = document.createElement('span');
+        span.className = "letter-slot";
+        span.innerText = "_";
+        wordDisplay.appendChild(span);
     }
+    
+    // 產生亂序字母選項 (包含正確字母與 Options 中的干擾項)
+    const optionsContainer = document.getElementById('spelling-options');
+    optionsContainer.innerHTML = "";
+    
+    // 合併正確字母與干擾項，並打亂
+    let allLetters = answer.split('').concat(item.options);
+    allLetters = shuffleArray(allLetters); 
 
-    Papa.parse(url, {
-        download: true,
-        header: true,
-        complete: function(results) {
-            processData(results.data);
-            showScreen('menu-screen');
-            document.getElementById('welcome-msg').innerText = `Welcome, ${currentUser === '66' ? 'Jasper' : 'Jolie'}`;
-        },
-        error: function(err) {
-            console.error("資料讀取失敗:", err);
-            alert("讀取資料失敗，請檢查 CSV 連結是否正確且已發佈。");
-        }
+    allLetters.forEach(letter => {
+        const btn = document.createElement('button');
+        btn.className = "letter-btn";
+        btn.innerText = letter;
+        btn.onclick = () => handleLetterClick(letter, btn);
+        optionsContainer.appendChild(btn);
     });
 }
 
-/**
- * 步驟 C: 將資料分類
- */
-function processData(rawData) {
-    // 清空舊資料
-    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
-
-    rawData.forEach(row => {
-        if (gameData[row.Mode]) {
-            gameData[row.Mode].push({
-                category: row.Category,
-                context: row.Context,
-                answer: row.Answer,
-                options: row.Options ? row.Options.split('|') : []
-            });
-        }
-    });
-    console.log("資料處理完畢:", gameData);
-}
-
-/**
- * 輔助功能：切換螢幕
- */
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    document.getElementById(screenId).style.display = 'block';
+// 輔助工具：打亂陣列
+function shuffleArray(array) {
+    return array.sort(() => Math.random() - 0.5);
 }
