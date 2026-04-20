@@ -2,7 +2,7 @@
  * app.js - 核心邏輯與資料路由
  */
 
-// 1. 設定區：請先填入你的 Google Sheet CSV 連結
+// 1. 設定區：Google Sheet CSV 連結
 const CSV_CONFIG = {
     "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv", 
     "22": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1SzwdMgvtmqJrVqawDMrf33UvA6b7C9PbCkjNaKqGLIOu-6tSGuD-EJJ1tBaTyCYMrLcJD_GSezQo/pub?output=csv"
@@ -12,7 +12,6 @@ const CSV_CONFIG = {
 let currentUser = "";
 let gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
 
-// 管理拼字遊戲目前的狀態
 let spellingState = {
     currentQuestionIndex: 0,
     correctCount: 0,
@@ -21,19 +20,16 @@ let spellingState = {
 };
 
 /**
- * 身份選擇函式 (由 index.html 的按鈕觸發)
+ * 身份選擇函式
  */
 function selectUser(userId) {
-    console.log("正在切換身份至:", userId);
     currentUser = userId;
-    
     const url = CSV_CONFIG[userId];
-    if (url && url !== "你的_JASPER_CSV_連結") {
-        // 更新歡迎詞並開始抓取資料
+    if (url) {
         document.getElementById('welcome-msg').innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
         fetchData(url);
     } else {
-        alert("錯誤：請在 app.js 中設定正確的 Google Sheet CSV 連結。");
+        alert("錯誤：找不到設定的 URL");
     }
 }
 
@@ -41,35 +37,25 @@ function selectUser(userId) {
  * 資料抓取函式
  */
 function fetchData(url) {
-    console.log("正在從此網址獲取資料:", url);
-    
-    // 使用 PapaParse 解析 CSV 資料
     Papa.parse(url, {
         download: true,
         header: true,
         complete: function(results) {
-            console.log("資料解析成功:", results.data);
             processGameData(results.data);
-            showScreen('menu-screen'); // 成功後顯示選單
+            showScreen('menu-screen');
         },
         error: function(err) {
             console.error("CSV 讀取錯誤:", err);
-            alert("資料讀取失敗，請確認 Google Sheet 已「發佈到網路」並選擇 CSV 格式。");
         }
     });
 }
 
 /**
- * 修改位置：找到 app.js 裡的 processGameData 函式並替換
+ * 處理原始 CSV 資料
  */
 function processGameData(rawData) {
-    // 清空舊資料
     gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
-    
-    console.log("原始資料第一筆內容：", rawData[0]); // 檢查欄位名稱是否正確
-
-    rawData.forEach((row, index) => {
-        // 使用 .trim() 去除可能的空格，並確保 Mode 存在
+    rawData.forEach(row => {
         if (row.Mode) {
             const mode = row.Mode.trim(); 
             if (gameData[mode]) {
@@ -79,16 +65,13 @@ function processGameData(rawData) {
                     answer: row.Answer,
                     options: row.Options ? row.Options.split('|') : []
                 });
-            } else {
-                console.warn(`第 ${index + 1} 行發現未知的模式: "${mode}"`);
             }
         }
     });
-    
-    console.log("分類後的資料庫：", gameData);
 }
+
 /**
- * 切換畫面函式
+ * 切換畫面
  */
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
@@ -96,10 +79,10 @@ function showScreen(screenId) {
 }
 
 /**
- * 切換身份 (登出)
+ * 登出
  */
 function logout() {
-    location.reload(); // 最徹底的重置方法
+    location.reload();
 }
 
 /**
@@ -108,15 +91,12 @@ function logout() {
 function startSpellingGame() {
     const questions = gameData.Spelling;
     if (questions.length === 0) {
-        alert("找不到拼字題目，請檢查 Google Sheet 的 Mode 欄位是否為 Spelling");
+        alert("找不到拼字題目！");
         return;
     }
-    
-    // 初始化狀態
     spellingState.questions = [...questions]; 
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
-    
     showScreen('spelling-screen');
     loadSpellingQuestion();
 }
@@ -125,7 +105,7 @@ function startSpellingGame() {
  * 載入當前題目
  */
 function loadSpellingQuestion() {
-    // 隱藏回饋區塊並恢復選項點擊功能
+    // 隱藏回饋區塊
     document.getElementById('spelling-feedback').style.display = 'none';
     document.getElementById('spelling-options').style.pointerEvents = 'auto'; 
     
@@ -147,10 +127,7 @@ function loadSpellingQuestion() {
         displayArea.appendChild(span);
     }
     
-    renderLetterButtons(targetWord, item.options);
-}
-    
-    // 3. 準備字母按鈕
+    // 產生按鈕 (這裡只呼叫一次，結構才正確)
     renderLetterButtons(targetWord, item.options);
 }
 
@@ -160,14 +137,10 @@ function loadSpellingQuestion() {
 function renderLetterButtons(answer, extraOptions) {
     const container = document.getElementById('spelling-options');
     container.innerHTML = "";
-    
-    // 合併正確字母與干擾項 (Options 欄位以 | 分隔)
     let letters = answer.split('');
     if (extraOptions && extraOptions.length > 0) {
         letters = letters.concat(extraOptions);
     }
-    
-    // 隨機打亂字母
     letters.sort(() => Math.random() - 0.5);
 
     letters.forEach(char => {
@@ -180,7 +153,7 @@ function renderLetterButtons(answer, extraOptions) {
 }
 
 /**
- * 處理玩家點擊字母
+ * 處理點擊字母
  */
 function handleLetterClick(char, btn, correctAnswer) {
     spellingState.userAnswer += char;
@@ -189,24 +162,21 @@ function handleLetterClick(char, btn, correctAnswer) {
     
     if (slots[currentIndex]) {
         slots[currentIndex].innerText = char;
-        slots[currentIndex].style.color = "#28a745";
     }
 
     btn.disabled = true;
 
-    // 當拼完單字時，執行結果檢查
     if (spellingState.userAnswer.length === correctAnswer.length) {
         checkSpellingResult(correctAnswer);
     }
 }
 
 /**
- * 檢查結果並顯示回饋區塊 (取代 alert)
+ * 檢查結果
  */
 function checkSpellingResult(correctAnswer) {
     const feedbackArea = document.getElementById('spelling-feedback');
     const feedbackText = document.getElementById('feedback-text');
-    
     document.getElementById('spelling-options').style.pointerEvents = 'none';
 
     if (spellingState.userAnswer === correctAnswer) {
@@ -221,16 +191,14 @@ function checkSpellingResult(correctAnswer) {
         feedbackArea.style.borderColor = "#dc3545";
         feedbackArea.style.backgroundColor = "#fff9f9";
     }
-
     feedbackArea.style.display = 'block';
 }
 
 /**
- * 下一題按鈕邏輯 (放在檔案最末尾)
+ * 下一題按鈕邏輯
  */
 function nextSpellingQuestion() {
     spellingState.currentQuestionIndex++;
-    
     if (spellingState.currentQuestionIndex < spellingState.questions.length) {
         loadSpellingQuestion();
     } else {
