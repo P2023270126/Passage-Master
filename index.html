@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Passage Master</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 加入這行修復 Papa is not defined 錯誤 -->
+    <!-- 引入 PapaParse 工具，用來讀取 Google Sheets 的 CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 </head>
 <body>
@@ -40,6 +40,12 @@
         
         <!-- 顯示亂序字母按鈕 -->
         <div id="spelling-options" class="options-grid"></div>
+
+        <!-- [新增項目] 結果回饋區塊：顯示對錯與下一題按鈕 -->
+        <div id="spelling-feedback" style="display:none; margin: 20px auto; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f9fff9; max-width: 400px;">
+            <h3 id="feedback-text" style="color: #28a745; margin-bottom: 15px; font-size: 1.5rem;">✅ Correct!</h3>
+            <button id="next-btn" class="mode-btn" style="background-color: #28a745; color: white;" onclick="nextSpellingQuestion()">下一題</button>
+        </div>
         
         <hr>
         <button onclick="showScreen('menu-screen')">返回選單</button>
