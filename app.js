@@ -186,7 +186,7 @@ function checkSpellingResult(correctAnswer) {
         feedbackArea.style.backgroundColor = "#f9fff9";
         spellingState.correctCount++;
     } else {
-        feedbackText.innerText = `❌ Wrong! Answer: ${correctAnswer}`;
+        feedbackText.innerText = `❌  ${correctAnswer}`;
         feedbackText.style.color = "#dc3545";
         feedbackArea.style.borderColor = "#dc3545";
         feedbackArea.style.backgroundColor = "#fff9f9";
