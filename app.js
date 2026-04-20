@@ -60,24 +60,33 @@ function fetchData(url) {
 }
 
 /**
- * 將原始資料分類到各個遊戲模式
+ * 修改位置：找到 app.js 裡的 processGameData 函式並替換
  */
 function processGameData(rawData) {
     // 清空舊資料
     gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
     
-    rawData.forEach(row => {
-        if (gameData[row.Mode]) {
-            gameData[row.Mode].push({
-                category: row.Category,
-                context: row.Context,
-                answer: row.Answer,
-                options: row.Options ? row.Options.split('|') : []
-            });
+    console.log("原始資料第一筆內容：", rawData[0]); // 檢查欄位名稱是否正確
+
+    rawData.forEach((row, index) => {
+        // 使用 .trim() 去除可能的空格，並確保 Mode 存在
+        if (row.Mode) {
+            const mode = row.Mode.trim(); 
+            if (gameData[mode]) {
+                gameData[mode].push({
+                    category: row.Category,
+                    context: row.Context,
+                    answer: row.Answer,
+                    options: row.Options ? row.Options.split('|') : []
+                });
+            } else {
+                console.warn(`第 ${index + 1} 行發現未知的模式: "${mode}"`);
+            }
         }
     });
+    
+    console.log("分類後的資料庫：", gameData);
 }
-
 /**
  * 切換畫面函式
  */
