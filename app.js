@@ -180,7 +180,7 @@ function renderLetterButtons(answer, extraOptions) {
 }
 
 /**
- * 處理字母點擊
+ * 處理玩家點擊字母
  */
 function handleLetterClick(char, btn, correctAnswer) {
     spellingState.userAnswer += char;
@@ -192,19 +192,21 @@ function handleLetterClick(char, btn, correctAnswer) {
         slots[currentIndex].style.color = "#28a745";
     }
 
-    btn.disabled = true; // 點過就不能再點
+    btn.disabled = true;
 
-    // 檢查是否拼完
+    // 當拼完單字時，執行結果檢查
     if (spellingState.userAnswer.length === correctAnswer.length) {
-        setTimeout(() => checkSpellingResult(correctAnswer), 300);
+        checkSpellingResult(correctAnswer);
     }
 }
 
+/**
+ * 檢查結果並顯示回饋區塊 (取代 alert)
+ */
 function checkSpellingResult(correctAnswer) {
     const feedbackArea = document.getElementById('spelling-feedback');
     const feedbackText = document.getElementById('feedback-text');
     
-    // 暫時鎖定按鈕區，避免在顯示結果時誤點
     document.getElementById('spelling-options').style.pointerEvents = 'none';
 
     if (spellingState.userAnswer === correctAnswer) {
@@ -220,24 +222,18 @@ function checkSpellingResult(correctAnswer) {
         feedbackArea.style.backgroundColor = "#fff9f9";
     }
 
-    // 顯示回饋區塊
     feedbackArea.style.display = 'block';
 }
 
 /**
- * 新增於 app.js 最底部
- * 處理「下一題」按鈕點擊後的邏輯
+ * 下一題按鈕邏輯 (放在檔案最末尾)
  */
 function nextSpellingQuestion() {
-    // 1. 增加題目索引
     spellingState.currentQuestionIndex++;
     
-    // 2. 判斷是否還有題目
     if (spellingState.currentQuestionIndex < spellingState.questions.length) {
-        // 如果有，載入下一題
         loadSpellingQuestion();
     } else {
-        // 如果沒有題目了，顯示總分並回到主選單
         alert(`遊戲結束！你的得分：${spellingState.correctCount} / ${spellingState.questions.length}`);
         showScreen('menu-screen');
     }
