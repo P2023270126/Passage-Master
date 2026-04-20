@@ -125,15 +125,19 @@ function startSpellingGame() {
  * 載入當前題目
  */
 function loadSpellingQuestion() {
+    // 隱藏回饋區塊並恢復選項點擊功能
+    document.getElementById('spelling-feedback').style.display = 'none';
+    document.getElementById('spelling-options').style.pointerEvents = 'auto'; 
+    
     const item = spellingState.questions[spellingState.currentQuestionIndex];
     const targetWord = item.answer.toLowerCase().trim();
     spellingState.userAnswer = ""; 
     
-    // 1. 顯示句子並將目標單字挖空
+    // 顯示句子並挖空
     const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "______");
     document.getElementById('spelling-sentence').innerText = displaySentence;
     
-    // 2. 產生底線格子
+    // 產生底線格子
     const displayArea = document.getElementById('spelling-word-display');
     displayArea.innerHTML = "";
     for (let i = 0; i < targetWord.length; i++) {
@@ -142,6 +146,9 @@ function loadSpellingQuestion() {
         span.innerText = "_";
         displayArea.appendChild(span);
     }
+    
+    renderLetterButtons(targetWord, item.options);
+}
     
     // 3. 準備字母按鈕
     renderLetterButtons(targetWord, item.options);
@@ -194,17 +201,43 @@ function handleLetterClick(char, btn, correctAnswer) {
 }
 
 function checkSpellingResult(correctAnswer) {
+    const feedbackArea = document.getElementById('spelling-feedback');
+    const feedbackText = document.getElementById('feedback-text');
+    
+    // 暫時鎖定按鈕區，避免在顯示結果時誤點
+    document.getElementById('spelling-options').style.pointerEvents = 'none';
+
     if (spellingState.userAnswer === correctAnswer) {
-        alert("太棒了！正確答案 ✨");
+        feedbackText.innerText = "✅ Correct!";
+        feedbackText.style.color = "#28a745";
+        feedbackArea.style.borderColor = "#28a745";
+        feedbackArea.style.backgroundColor = "#f9fff9";
         spellingState.correctCount++;
     } else {
-        alert(`可惜！正確答案是：${correctAnswer}`);
+        feedbackText.innerText = `❌ Wrong! Answer: ${correctAnswer}`;
+        feedbackText.style.color = "#dc3545";
+        feedbackArea.style.borderColor = "#dc3545";
+        feedbackArea.style.backgroundColor = "#fff9f9";
     }
 
+    // 顯示回饋區塊
+    feedbackArea.style.display = 'block';
+}
+
+/**
+ * 新增於 app.js 最底部
+ * 處理「下一題」按鈕點擊後的邏輯
+ */
+function nextSpellingQuestion() {
+    // 1. 增加題目索引
     spellingState.currentQuestionIndex++;
+    
+    // 2. 判斷是否還有題目
     if (spellingState.currentQuestionIndex < spellingState.questions.length) {
+        // 如果有，載入下一題
         loadSpellingQuestion();
     } else {
+        // 如果沒有題目了，顯示總分並回到主選單
         alert(`遊戲結束！你的得分：${spellingState.correctCount} / ${spellingState.questions.length}`);
         showScreen('menu-screen');
     }
