@@ -24,6 +24,8 @@
         <div id="category-list"></div>
         <div class="menu-buttons">
             <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
+            <!-- 找到 menu-screen 區塊，加入這個按鈕 -->
+            <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
         </div>
         <button onclick="logout()">切換身份</button>
     </div>
@@ -51,6 +53,29 @@
         <button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
 
+<!-- Rearrange 遊戲畫面 -->
+<div id="rearrange-screen" class="screen" style="display:none;">
+    <h2 id="rearrange-title">Sentence Rearrange</h2>
+    
+    <!-- 顯示提示（可能是中文翻譯或圖片說明） -->
+    <p id="rearrange-hint" class="sentence-box" style="font-style: italic; color: #666;"></p>
+    
+    <!-- 玩家拼湊出的句子顯示區 -->
+    <div id="rearrange-word-display" class="word-slots" style="min-height: 80px; border: 1px dashed #ccc; padding: 10px; margin-bottom: 20px;"></div>
+    
+    <!-- 亂序單字按鈕區 -->
+    <div id="rearrange-options" class="options-grid"></div>
+
+    <!-- 結果回饋區塊 -->
+    <div id="rearrange-feedback" style="display:none; margin: 20px auto; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f9fff9; max-width: 400px;">
+        <h3 id="rearrange-feedback-text" style="color: #28a745; margin-bottom: 15px;">✅ Excellent!</h3>
+        <button class="mode-btn" style="background-color: #28a745; color: white;" onclick="nextRearrangeQuestion()">下一題</button>
+    </div>
+    
+    <hr>
+    <button onclick="showScreen('menu-screen')">返回選單</button>
+</div>
+    
     <script src="app.js"></script>
 </body>
 </html>
