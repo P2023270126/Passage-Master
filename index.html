@@ -94,10 +94,10 @@
     
     <div id="rearrange-word-display" class="word-slots"></div>
     
-    <!-- [新增] 退格按鈕區塊 -->
-    <div style="margin-bottom: 20px;">
-        <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
-    </div>
+   <!-- [修正] 統一整合的退格按鈕區塊，帶有 ID 以便 JavaScript 控制 -->
+<div id="rearrange-undo-container" style="margin-bottom: 20px;">
+    <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
+</div>
     
     <div id="rearrange-options" class="options-grid"></div>
 
