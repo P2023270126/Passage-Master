@@ -232,6 +232,29 @@ function loadRearrangeQuestion() {
 }
 
 /**
+ * 處理玩家點擊單字按鈕
+ * @param {string} word - 點擊的單字
+ * @param {HTMLElement} btn - 被點擊的按鈕元素
+ */
+function handleWordClick(word, btn) {
+    // 1. 將單字加入玩家答案陣列
+    rearrangeState.userAnswerArray.push(word);
+    
+    // 2. 更新顯示區 (呼叫你已有的渲染函式)
+    renderRearrangeDisplay();
+    
+    // 3. 停用該按鈕並改變透明度，讓玩家知道已選過
+    btn.disabled = true;
+    btn.style.opacity = "0.3";
+    
+    // 4. 檢查是否所有單字都選完了
+    const targetWords = currentCorrectSentence.split(' ');
+    if (rearrangeState.userAnswerArray.length === targetWords.length) {
+        checkRearrangeResult();
+    }
+}
+
+/**
  * 檢查重組結果
  */
 function checkRearrangeResult() {
