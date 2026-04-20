@@ -68,14 +68,14 @@ function processGameData(rawData) {
     gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
     rawData.forEach(row => {
         if (row.Mode) {
-            const mode = row.Mode.trim(); 
+            const mode = row.Mode.trim();
             if (gameData[mode]) {
                 gameData[mode].push({
                     category: row.Category,
                     context: row.Context,
                     answer: row.Answer,
-                    correction: row.Correction, // [新增] 讀取修正後的單字
-                    options: row.Options ? row.Options.split('|') : []
+                    // 確保這裡的鍵名 (Key) 跟 Google Sheet 表頭完全一樣
+                    correction: row.Correction || row.correction 
                 });
             }
         }
@@ -291,20 +291,23 @@ function selectWord(word, element, wrongWord, rightWord) {
 
 function checkCorrection() {
     const userInp = document.getElementById('user-correction').value.trim().toLowerCase();
-    const feedback = document.getElementById('proofread-feedback');
     const feedbackText = document.getElementById('proofread-feedback-text');
     const item = proofreadState.questions[proofreadState.currentQuestionIndex];
     
-    // 檢查點擊的字是否正確，且輸入的修正也正確
-    if (proofreadState.targetWord.toLowerCase() === item.answer.toLowerCase() && userInp === item.correction.toLowerCase()) {
+    // 安全地讀取答案，避免 undefined 錯誤
+    const targetWrong = (item.answer || "").toLowerCase();
+    const targetRight = (item.correction || "").toLowerCase();
+
+    if (proofreadState.targetWord.toLowerCase() === targetWrong && userInp === targetRight) {
         feedbackText.innerText = "✅ Excellent! You fixed it!";
         feedbackText.style.color = "#28a745";
         proofreadState.correctCount++;
     } else {
-        feedbackText.innerText = `❌ The error was "${item.answer}" -> "${item.correction}".`;
+        // 如果顯示 undefined，就代表 item.correction 沒抓到資料
+        feedbackText.innerText = `❌ The error was "${item.answer}" -> "${item.correction || 'Missing Data'}".`;
         feedbackText.style.color = "#dc3545";
     }
-    feedback.style.display = 'block';
+    document.getElementById('proofread-feedback').style.display = 'block';
 }
 
 function nextProofreadQuestion() {
