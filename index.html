@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Passage Master</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 身份選擇頁面 -->
+    <div id="login-screen" class="screen">
+        <h1>請選擇身份</h1>
+        <div class="login-container">
+            <button class="identity-btn" onclick="selectUser('66')">66 Jasper</button>
+            <button class="identity-btn" onclick="selectUser('22')">22 Jolie</button>
+        </div>
+    </div>
+
+    <!-- 模式選擇頁面 (初始隱藏) -->
+    <div id="menu-screen" class="screen" style="display:none;">
+        <h2 id="welcome-msg"></h2>
+        <div id="category-list"></div>
+        <button onclick="logout()">切換身份</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
