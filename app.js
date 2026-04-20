@@ -284,6 +284,25 @@ function checkRearrangeResult() {
 }
 
 /**
+ * 切換至下一個重組題目
+ */
+function nextRearrangeQuestion() {
+    // 1. 增加題目索引數值
+    rearrangeState.currentQuestionIndex++;
+
+    // 2. 判斷是否還有下一題
+    if (rearrangeState.currentQuestionIndex < rearrangeState.questions.length) {
+        // 如果有下一題，呼叫原本的載入函式
+        // 這會自動重置按鈕顯示、清空顯示區與準備新單字
+        loadRearrangeQuestion();
+    } else {
+        // 如果題目全部做完，顯示結算視窗並返回主選單
+        alert(`恭喜完成！重組練習得分：${rearrangeState.correctCount} / ${rearrangeState.questions.length}`);
+        showScreen('menu-screen');
+    }
+}
+
+/**
  * 退回一步的功能
  */
 function undoLastWord() {
