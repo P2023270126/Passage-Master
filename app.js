@@ -298,40 +298,152 @@ function handleWordClick(word, btn, originalSentence) {
 }
 
 /**
- * 檢查重組結果
+ * Rearrange 模式的狀態管理與功能
  */
-function checkRearrangeResult(correctSentence) {
+let currentCorrectSentence = ""; // 全域儲存目前的正確答案
+
+let rearrangeState = {
+    currentQuestionIndex: 0,
+    correctCount: 0,
+    questions: [],
+    userAnswerArray: [] 
+};
+
+function startRearrangeGame() {
+    const questions = gameData.Rearrange;
+    if (!questions || questions.length === 0) {
+        alert("找不到重組句子題目！");
+        return;
+    }
+    rearrangeState.questions = [...questions];
+    rearrangeState.currentQuestionIndex = 0;
+    rearrangeState.correctCount = 0;
+    showScreen('rearrange-screen');
+    loadRearrangeQuestion();
+}
+
+function loadRearrangeQuestion() {
+    // 1. 重置狀態與畫面
+    const feedbackArea = document.getElementById('rearrange-feedback');
+    feedbackArea.style.display = 'none';
+    document.getElementById('rearrange-options').style.pointerEvents = 'auto';
+    rearrangeState.userAnswerArray = [];
+    
+    const item = rearrangeState.questions[rearrangeState.currentQuestionIndex];
+    
+    // 重要：同步目前的正確答案，供「語音播放」使用
+    currentCorrectSentence = item.context.trim();
+    
+    // 顯示提示
+    document.getElementById('rearrange-hint').innerText = item.category || "請重組句子：";
+    
+    // 清空顯示區
+    renderRearrangeDisplay();
+    
+    // 準備打亂的單字按鈕
+    let words = currentCorrectSentence.split(' ');
+    words.sort(() => Math.random() - 0.5);
+    
+    const optionsContainer = document.getElementById('rearrange-options');
+    optionsContainer.innerHTML = "";
+    
+    words.forEach((word) => {
+        const btn = document.createElement('button');
+        btn.className = "letter-btn"; // 保持與 style.css 一致
+        btn.innerText = word;
+        btn.onclick = () => handleWordClick(word, btn);
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function handleWordClick(word, btn) {
+    rearrangeState.userAnswerArray.push(word);
+    
+    // 更新顯示區
+    renderRearrangeDisplay();
+    
+    // 停用按鈕
+    btn.disabled = true;
+    btn.style.opacity = "0.3";
+    
+    // 檢查是否選完
+    const targetWords = currentCorrectSentence.split(' ');
+    if (rearrangeState.userAnswerArray.length === targetWords.length) {
+        checkRearrangeResult();
+    }
+}
+
+// [整合] 渲染顯示區的統一函式
+function renderRearrangeDisplay() {
+    const displayArea = document.getElementById('rearrange-word-display');
+    displayArea.innerHTML = ""; 
+    rearrangeState.userAnswerArray.forEach(word => {
+        const span = document.createElement('span');
+        span.innerText = word;
+        span.className = "selected-word"; // 使用你在 style.css 定義的漂亮卡片樣式
+        displayArea.appendChild(span);
+    });
+}
+
+// [新功能] 退回一步
+function undoLastWord() {
+    if (rearrangeState.userAnswerArray.length === 0) return;
+
+    // 1. 移除最後一個單字
+    const removedWord = rearrangeState.userAnswerArray.pop();
+
+    // 2. 更新畫面
+    renderRearrangeDisplay();
+
+    // 3. 恢復對應的按鈕
+    const optionButtons = document.querySelectorAll('#rearrange-options .letter-btn');
+    for (let btn of optionButtons) {
+        if (btn.innerText === removedWord && btn.disabled) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            break; 
+        }
+    }
+}
+
+// [新功能] 語音播放 (參考 image_f7db85.png 需求)
+function speakSentence() {
+    if (!currentCorrectSentence) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(currentCorrectSentence);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.85; // 稍慢的速度有利於學習
+    window.speechSynthesis.speak(utterance);
+}
+
+function checkRearrangeResult() {
     const playerSentence = rearrangeState.userAnswerArray.join(' ');
     const feedbackArea = document.getElementById('rearrange-feedback');
     const feedbackText = document.getElementById('rearrange-feedback-text');
     
     document.getElementById('rearrange-options').style.pointerEvents = 'none';
 
-    if (playerSentence === correctSentence) {
-        feedbackText.innerText = "✅ Excellent! Correct Sentence.";
+    if (playerSentence === currentCorrectSentence) {
+        feedbackText.innerText = "✅ Excellent! " + currentCorrectSentence;
         feedbackText.style.color = "#28a745";
         feedbackArea.style.borderColor = "#28a745";
         feedbackArea.style.backgroundColor = "#f9fff9";
         rearrangeState.correctCount++;
     } else {
-        feedbackText.innerText = `❌  ${correctSentence}`;
+        feedbackText.innerText = "❌ Incorrect. Correct: " + currentCorrectSentence;
         feedbackText.style.color = "#dc3545";
         feedbackArea.style.borderColor = "#dc3545";
         feedbackArea.style.backgroundColor = "#fff9f9";
     }
-    
     feedbackArea.style.display = 'block';
 }
 
-/**
- * 下一題重組句子
- */
 function nextRearrangeQuestion() {
     rearrangeState.currentQuestionIndex++;
     if (rearrangeState.currentQuestionIndex < rearrangeState.questions.length) {
         loadRearrangeQuestion();
     } else {
-        alert(`重組練習結束！得分：${rearrangeState.correctCount} / ${rearrangeState.questions.length}`);
+        alert(`練習結束！得分：${rearrangeState.correctCount} / ${rearrangeState.questions.length}`);
         showScreen('menu-screen');
     }
 }
