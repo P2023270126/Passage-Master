@@ -186,57 +186,90 @@ function startRearrangeGame() {
     loadRearrangeQuestion();
 }
 
+/**
+ * Rearrange 模式的狀態管理與功能
+ */
+
+// 確保這是在檔案頂部的全域變數
+// let currentCorrectSentence = ""; 
+
+/**
+ * 載入重組句子題目
+ */
 function loadRearrangeQuestion() {
+    // 1. 重置畫面與狀態
     document.getElementById('rearrange-feedback').style.display = 'none';
+    document.getElementById('rearrange-options').style.display = 'flex'; // 確保選項區顯示
+    document.getElementById('rearrange-undo-container').style.display = 'block'; // 確保退回按鈕顯示
     document.getElementById('rearrange-options').style.pointerEvents = 'auto';
+    
     rearrangeState.userAnswerArray = [];
     
     const item = rearrangeState.questions[rearrangeState.currentQuestionIndex];
-    currentCorrectSentence = item.context.trim(); // 存入正確答案供語音使用
+    
+    // 同步正確答案，供語音播放與判斷使用
+    currentCorrectSentence = item.context.trim();
     
     document.getElementById('rearrange-hint').innerText = item.category || "請重組句子：";
+    
+    // 清空並重新渲染顯示區
     renderRearrangeDisplay();
     
+    // 準備打亂的單字按鈕
     let words = currentCorrectSentence.split(' ');
     words.sort(() => Math.random() - 0.5);
     
     const optionsContainer = document.getElementById('rearrange-options');
     optionsContainer.innerHTML = "";
+    
     words.forEach((word) => {
         const btn = document.createElement('button');
-        btn.className = "letter-btn"; // 這裡對應 CSS 中的樣式
+        btn.className = "letter-btn"; 
         btn.innerText = word;
         btn.onclick = () => handleWordClick(word, btn);
         optionsContainer.appendChild(btn);
     });
 }
 
-function handleWordClick(word, btn) {
-    rearrangeState.userAnswerArray.push(word);
-    renderRearrangeDisplay();
-    btn.disabled = true;
-    btn.style.opacity = "0.3";
-    const targetWords = currentCorrectSentence.split(' ');
-    if (rearrangeState.userAnswerArray.length === targetWords.length) {
-        checkRearrangeResult();
+/**
+ * 檢查重組結果
+ */
+function checkRearrangeResult() {
+    const playerSentence = rearrangeState.userAnswerArray.join(' ');
+    const feedbackArea = document.getElementById('rearrange-feedback');
+    const feedbackText = document.getElementById('rearrange-feedback-text');
+    
+    // 停止選項區的所有互動
+    document.getElementById('rearrange-options').style.pointerEvents = 'none';
+
+    // [核心修正] 無論對錯，一旦檢查結果，就隱藏「退回」按鈕和「選項」區
+    document.getElementById('rearrange-undo-container').style.display = 'none';
+    document.getElementById('rearrange-options').style.display = 'none';
+
+    if (playerSentence === currentCorrectSentence) {
+        feedbackText.innerText = "✅ Excellent!";
+        feedbackText.style.color = "#28a745";
+        feedbackArea.style.borderColor = "#28a745";
+        rearrangeState.correctCount++;
+    } else {
+        feedbackText.innerText = "❌ " + currentCorrectSentence;
+        feedbackText.style.color = "#dc3545";
+        feedbackArea.style.borderColor = "#dc3545";
     }
+    
+    feedbackArea.style.display = 'block';
 }
 
-function renderRearrangeDisplay() {
-    const displayArea = document.getElementById('rearrange-word-display');
-    displayArea.innerHTML = ""; 
-    rearrangeState.userAnswerArray.forEach(word => {
-        const span = document.createElement('span');
-        span.innerText = word;
-        span.className = "selected-word";
-        displayArea.appendChild(span);
-    });
-}
-
+/**
+ * 退回一步的功能
+ */
 function undoLastWord() {
     if (rearrangeState.userAnswerArray.length === 0) return;
+
     const removedWord = rearrangeState.userAnswerArray.pop();
     renderRearrangeDisplay();
+
+    // 恢復對應的按鈕狀態
     const optionButtons = document.querySelectorAll('#rearrange-options .letter-btn');
     for (let btn of optionButtons) {
         if (btn.innerText === removedWord && btn.disabled) {
@@ -247,6 +280,9 @@ function undoLastWord() {
     }
 }
 
+/**
+ * 語音播放功能
+ */
 function speakSentence() {
     if (!currentCorrectSentence) return;
     window.speechSynthesis.cancel();
@@ -256,29 +292,14 @@ function speakSentence() {
     window.speechSynthesis.speak(utterance);
 }
 
-function checkRearrangeResult() {
-    const playerSentence = rearrangeState.userAnswerArray.join(' ');
-    const feedbackArea = document.getElementById('rearrange-feedback');
-    const feedbackText = document.getElementById('rearrange-feedback-text');
-    document.getElementById('rearrange-options').style.pointerEvents = 'none';
-
-    if (playerSentence === currentCorrectSentence) {
-        feedbackText.innerText = "✅ Excellent!";
-        feedbackText.style.color = "#28a745";
-        rearrangeState.correctCount++;
-    } else {
-        feedbackText.innerText = "❌ " + currentCorrectSentence;
-        feedbackText.style.color = "#dc3545";
-    }
-    feedbackArea.style.display = 'block';
-}
-
-function nextRearrangeQuestion() {
-    rearrangeState.currentQuestionIndex++;
-    if (rearrangeState.currentQuestionIndex < rearrangeState.questions.length) {
-        loadRearrangeQuestion();
-    } else {
-        alert(`練習結束！得分：${rearrangeState.correctCount} / ${rearrangeState.questions.length}`);
-        showScreen('menu-screen');
-    }
+// 輔助渲染函式
+function renderRearrangeDisplay() {
+    const displayArea = document.getElementById('rearrange-word-display');
+    displayArea.innerHTML = ""; 
+    rearrangeState.userAnswerArray.forEach(word => {
+        const span = document.createElement('span');
+        span.innerText = word;
+        span.className = "selected-word"; 
+        displayArea.appendChild(span);
+    });
 }
