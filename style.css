@@ -41,3 +41,29 @@ body {
     transform: scale(1.05);
     background-color: #357ABD;
 }
+
+.logout-btn {
+    margin-top: 20px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.word-slots {
+    font-size: 2rem;
+    letter-spacing: 10px;
+    margin: 20px 0;
+}
+
+.letter-btn {
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 1.2rem;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
