@@ -7,22 +7,17 @@
 let spellingState = {
     currentQuestionIndex: 0,
     correctCount: 0,
-    questions: []
+    questions: [],
+    userAnswer: ""  // <--- 務必加入這行，用來儲存拼字進度
 };
 
 /**
  * 修復：切換身份函式
+ * 位置：建議放在 selectUser 函式附近
  */
 function logout() {
-    // 重置所有全域狀態
-    currentUser = "";
-    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
-    
-    // 回到登入畫面
-    showScreen('login-screen');
-    
-    // 清空歡迎文字，避免下次進入時殘留
-    document.getElementById('welcome-msg').innerText = "";
+    // 直接重新載入網頁，這是最保險的「切換身份」方法
+    location.reload();
 }
 
 /**
