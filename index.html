@@ -65,10 +65,13 @@
 
     <!-- 選單頁面 -->
     <div id="menu-screen" class="screen" style="display:none;">
-        <h2 id="welcome-msg"></h2>
-        <div class="menu-buttons">
+        <h2 id="welcome-msg">Welcome</h2>
+        <div class="menu-grid">
             <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
             <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
+            
+            <!-- [新增這個按鈕] -->
+            <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯與修正)</button>
         </div>
         <button onclick="logout()">切換身份</button>
     </div>
