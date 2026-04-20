@@ -343,3 +343,45 @@ function renderRearrangeDisplay() {
         displayArea.appendChild(span);
     });
 }
+
+// 1. 用來更新下拉選單內容的函式
+function updateCategoryDropdown(mode) {
+    const dropdown = document.getElementById(`${mode.toLowerCase()}-category-filter`);
+    if (!dropdown) return;
+
+    // 取得該模式下所有的類別並去重
+    const categories = [...new Set(gameData[mode].map(item => item.category))];
+    dropdown.innerHTML = '<option value="all">全部類別</option>';
+    
+    categories.forEach(cat => {
+        if (cat) {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.innerText = cat;
+            dropdown.appendChild(opt);
+        }
+    });
+}
+
+// 2. 用來處理玩家切換類別時的篩選邏輯
+function filterByCategory(mode) {
+    const dropdown = document.getElementById(`${mode.toLowerCase()}-category-filter`);
+    const selectedCat = dropdown.value;
+    let filteredQuestions = [...gameData[mode]];
+    
+    if (selectedCat !== 'all') {
+        filteredQuestions = filteredQuestions.filter(q => q.category === selectedCat);
+    }
+
+    if (mode === 'Rearrange') {
+        rearrangeState.questions = filteredQuestions;
+        rearrangeState.currentQuestionIndex = 0;
+        rearrangeState.correctCount = 0;
+        loadRearrangeQuestion();
+    } else if (mode === 'Spelling') {
+        spellingState.questions = filteredQuestions;
+        spellingState.currentQuestionIndex = 0;
+        spellingState.correctCount = 0;
+        loadSpellingQuestion();
+    }
+}
