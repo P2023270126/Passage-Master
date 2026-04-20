@@ -20,7 +20,27 @@
     <div id="menu-screen" class="screen" style="display:none;">
         <h2 id="welcome-msg"></h2>
         <div id="category-list"></div>
+        <div class="menu-buttons">
+            <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
+        </div>
         <button onclick="logout()">切換身份</button>
+    </div>
+
+    <!-- Spelling 遊戲畫面 (初始隱藏) -->
+    <div id="spelling-screen" class="screen" style="display:none;">
+        <h2 id="spelling-title">Spelling Game</h2>
+        
+        <!-- 顯示挖空的句子 -->
+        <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px; line-height: 1.6;"></p>
+        
+        <!-- 顯示拼字底線格子 -->
+        <div id="spelling-word-display" style="min-height: 50px; margin-bottom: 20px;"></div>
+        
+        <!-- 顯示亂序字母按鈕 -->
+        <div id="spelling-options" class="options-grid"></div>
+        
+        <hr>
+        <button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
 
     <script src="app.js"></script>
