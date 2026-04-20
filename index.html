@@ -4,57 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Passage Master</title>
+    <!-- 1. 外部資源 -->
     <link rel="stylesheet" href="style.css">
-    <!-- 引入 PapaParse 工具 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
+    <!-- 2. 強效 CSS 修正區 -->
     <style>
-        /* 重組句子顯示容器：固定高度與自動換行 */
+        /* 強制固定重組句子的顯示容器 */
         .word-slots {
-            min-height: 120px !important;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            align-content: flex-start;
-            padding: 15px !important;
-            background-color: #fcfcfc;
-            border: 2px dashed #bbb !important;
-            border-radius: 12px;
-            margin: 20px auto;
-            max-width: 90%;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+            justify-content: center !important;
+            align-content: flex-start !important;
+            
+            min-height: 150px !important; /* 稍微加高，確保空間充足 */
+            width: 100% !important;
+            max-width: 600px !important;
+            margin: 20px auto !important;
+            padding: 20px !important;
+            
+            background-color: #fcfcfc !important;
+            border: 2px dashed #aaaaaa !important; /* 稍微加深虛線顏色 */
+            border-radius: 15px !important; /* 圓角效果 */
+            box-sizing: border-box !important;
         }
 
-        /* 已選擇單字的樣式 */
+        /* 點擊後出現在容器內的單字樣式 */
         .selected-word {
-            background-color: #ffffff;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333;
-            animation: fadeIn 0.3s ease;
+            display: inline-block !important;
+            background-color: #ffffff !important;
+            border: 1px solid #ddd !important;
+            padding: 8px 15px !important;
+            border-radius: 8px !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 選項按鈕區塊 */
+        /* 下方待選單字區域 */
         .options-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            margin-top: 20px !important;
         }
     </style>
 </head>
 <body>
-    <!-- 身份選擇頁面 -->
+
+    <!-- 登入頁面 -->
     <div id="login-screen" class="screen">
         <h1>請選擇身份</h1>
         <div class="login-container">
@@ -63,10 +63,9 @@
         </div>
     </div>
 
-    <!-- 模式選擇頁面 -->
+    <!-- 選單頁面 -->
     <div id="menu-screen" class="screen" style="display:none;">
         <h2 id="welcome-msg"></h2>
-        <div id="category-list"></div>
         <div class="menu-buttons">
             <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
             <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
@@ -74,41 +73,39 @@
         <button onclick="logout()">切換身份</button>
     </div>
 
-    <!-- Spelling 遊戲畫面 -->
+    <!-- Spelling 畫面 (保持原樣) -->
     <div id="spelling-screen" class="screen" style="display:none;">
-        <h2 id="spelling-title">Spelling Game</h2>
-        <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px; line-height: 1.6;"></p>
-        <div id="spelling-word-display" style="min-height: 50px; margin-bottom: 20px;"></div>
+        <h2>Spelling Game</h2>
+        <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
+        <div id="spelling-word-display" style="min-height: 50px;"></div>
         <div id="spelling-options" class="options-grid"></div>
-        <div id="spelling-feedback" style="display:none; margin: 20px auto; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f9fff9; max-width: 400px;">
-            <h3 id="feedback-text" style="color: #28a745; margin-bottom: 15px; font-size: 1.5rem;">✅ Correct!</h3>
-            <button class="mode-btn" style="background-color: #28a745; color: white;" onclick="nextSpellingQuestion()">下一題</button>
+        <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
+            <h3 id="feedback-text">✅ Correct!</h3>
+            <button onclick="nextSpellingQuestion()">下一題</button>
         </div>
         <hr>
         <button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
 
-    <!-- Rearrange 遊戲畫面 -->
+    <!-- Rearrange 畫面 (重點修正區) -->
     <div id="rearrange-screen" class="screen" style="display:none;">
         <h2 id="rearrange-title">Sentence Rearrange</h2>
-        <p id="rearrange-hint" class="sentence-box" style="font-style: italic; color: #666;"></p>
+        <p id="rearrange-hint" style="font-style: italic; color: #666;"></p>
         
-        <!-- 重組顯示區 -->
+        <!-- 單字容器：現在 ID 與 Class 都正確了 -->
         <div id="rearrange-word-display" class="word-slots"></div>
         
-        <!-- 單字按鈕區 -->
         <div id="rearrange-options" class="options-grid"></div>
 
-        <!-- 結果回饋區塊 -->
-        <div id="rearrange-feedback" style="display:none; margin: 20px auto; padding: 20px; border: 2px solid #28a745; border-radius: 10px; background-color: #f9fff9; max-width: 400px;">
-            <h3 id="rearrange-feedback-text" style="color: #28a745; margin-bottom: 15px;">✅ Excellent!</h3>
-            <button class="mode-btn" style="background-color: #28a745; color: white;" onclick="nextRearrangeQuestion()">下一題</button>
+        <div id="rearrange-feedback" style="display:none; margin-top: 20px; padding: 20px; border: 2px solid #28a745; border-radius: 10px;">
+            <h3 id="rearrange-feedback-text" style="color: #28a745;">✅ Excellent!</h3>
+            <button class="mode-btn" onclick="nextRearrangeQuestion()">下一題</button>
         </div>
         
         <hr>
         <button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
-    
+
     <script src="app.js"></script>
 </body>
 </html>
