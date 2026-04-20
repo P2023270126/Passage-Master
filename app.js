@@ -267,7 +267,7 @@ function checkRearrangeResult() {
         feedbackText.style.color = "#28a745";
         rearrangeState.correctCount++;
     } else {
-        feedbackText.innerText = "❌ Incorrect. Correct answer: " + currentCorrectSentence;
+        feedbackText.innerText = "❌ " + currentCorrectSentence;
         feedbackText.style.color = "#dc3545";
     }
     feedbackArea.style.display = 'block';
