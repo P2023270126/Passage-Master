@@ -1,4 +1,26 @@
 /**
+ * 核心身份選擇函式
+ * @param {string} userId - 用戶編號（66 或 22）
+ */
+function selectUser(userId) {
+    console.log("已選擇用戶:", userId);
+    // 呼叫先前寫好的載入邏輯
+    const csvUrl = CSV_CONFIG[userId];
+    if (csvUrl) {
+        fetchData(csvUrl);
+        document.getElementById('welcome-msg').innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
+    } else {
+        alert("找不到對應的 CSV 連結，請檢查 app.js 中的 CSV_CONFIG 設定。");
+    }
+}
+
+// 確保之前的 CSV_CONFIG 依然存在
+const CSV_CONFIG = {
+    "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pubhtml",
+    "22": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ1SzwdMgvtmqJrVqawDMrf33UvA6b7C9PbCkjNaKqGLIOu-6tSGuD-EJJ1tBaTyCYMrLcJD_GSezQo/pubhtml"
+};
+
+/**
  * 程式文件：app.js (修復版與 Spelling 邏輯)
  */
 
