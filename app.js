@@ -82,15 +82,14 @@ function logout() {
     location.reload();
 }
 
-/**
- * Spelling 遊戲邏輯
- */
+// 在 Spelling 遊戲開始時
 function startSpellingGame() {
     const questions = gameData.Spelling;
-    if (questions.length === 0) {
-        alert("找不到拼字題目！");
-        return;
-    }
+    if (questions.length === 0) return alert("找不到拼字題目！");
+    
+    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
+    updateCategoryDropdown('Spelling'); 
+
     spellingState.questions = [...questions]; 
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
@@ -170,15 +169,14 @@ function nextSpellingQuestion() {
     }
 }
 
-/**
- * Rearrange 遊戲邏輯 (整合新功能)
- */
+// 在 Rearrange 遊戲開始時
 function startRearrangeGame() {
     const questions = gameData.Rearrange;
-    if (!questions || questions.length === 0) {
-        alert("找不到重組題目！");
-        return;
-    }
+    if (!questions || questions.length === 0) return alert("找不到重組題目！");
+
+    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
+    updateCategoryDropdown('Rearrange');
+
     rearrangeState.questions = [...questions];
     rearrangeState.currentQuestionIndex = 0;
     rearrangeState.correctCount = 0;
