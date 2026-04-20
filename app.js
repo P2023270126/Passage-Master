@@ -31,11 +31,11 @@ function logout() {
 function startSpellingGame() {
     const questions = gameData.Spelling;
     if (questions.length === 0) {
-        alert("目前沒有 Spelling 的題目資料。");
+        alert("目前沒有題目，請檢查 Google Sheet 資料！");
         return;
     }
     
-    spellingState.questions = questions; // 可以加入 shuffleArray(questions) 隨機排序
+    spellingState.questions = [...questions]; // 複製題目
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
     
@@ -44,44 +44,93 @@ function startSpellingGame() {
 }
 
 /**
- * 載入單個拼字題目
+ * 載入單個題目並產生介面
  */
 function loadSpellingQuestion() {
     const item = spellingState.questions[spellingState.currentQuestionIndex];
     const answer = item.answer.toLowerCase();
+    spellingState.userAnswer = ""; // 重置學生答案
     
-    // 處理句子顯示：將答案單字替換成底線，例如 "The apple is red" -> "The _____ is red"
+    // 1. 顯示句子並挖空
     const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "_____");
     document.getElementById('spelling-sentence').innerText = displaySentence;
     
-    // 初始化拼字區域 (顯示底線)
-    const wordDisplay = document.getElementById('spelling-word-display');
-    wordDisplay.innerHTML = "";
-    for(let i=0; i<answer.length; i++) {
+    // 2. 顯示底線格子
+    renderWordDisplay(answer);
+    
+    // 3. 產生打亂的字母按鈕
+    renderLetterButtons(item);
+}
+
+function renderWordDisplay(answer) {
+    const container = document.getElementById('spelling-word-display');
+    container.innerHTML = "";
+    for (let i = 0; i < answer.length; i++) {
         const span = document.createElement('span');
         span.className = "letter-slot";
         span.innerText = "_";
-        wordDisplay.appendChild(span);
+        span.style.margin = "0 5px";
+        span.style.borderBottom = "2px solid black";
+        container.appendChild(span);
     }
+}
+
+function renderLetterButtons(item) {
+    const container = document.getElementById('spelling-options');
+    container.innerHTML = "";
     
-    // 產生亂序字母選項 (包含正確字母與 Options 中的干擾項)
-    const optionsContainer = document.getElementById('spelling-options');
-    optionsContainer.innerHTML = "";
+    const answerLetters = item.answer.toLowerCase().split('');
+    const extraLetters = item.options || [];
+    let allLetters = answerLetters.concat(extraLetters);
     
-    // 合併正確字母與干擾項，並打亂
-    let allLetters = answer.split('').concat(item.options);
-    allLetters = shuffleArray(allLetters); 
+    // 打亂字母順序
+    allLetters.sort(() => Math.random() - 0.5);
 
     allLetters.forEach(letter => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
         btn.innerText = letter;
-        btn.onclick = () => handleLetterClick(letter, btn);
-        optionsContainer.appendChild(btn);
+        btn.onclick = () => handleLetterSelection(letter, btn, item.answer.toLowerCase());
+        container.appendChild(btn);
     });
 }
 
-// 輔助工具：打亂陣列
-function shuffleArray(array) {
-    return array.sort(() => Math.random() - 0.5);
+/**
+ * 處理玩家點擊字母
+ */
+function handleLetterSelection(letter, btn, fullAnswer) {
+    spellingState.userAnswer += letter;
+    const currentIndex = spellingState.userAnswer.length - 1;
+    
+    // 更新畫面上的底線
+    const slots = document.querySelectorAll('.letter-slot');
+    if (slots[currentIndex]) {
+        slots[currentIndex].innerText = letter;
+    }
+    
+    btn.disabled = true; // 點過的按鈕不能再點
+    btn.style.opacity = "0.5";
+
+    // 檢查是否拼完
+    if (spellingState.userAnswer.length === fullAnswer.length) {
+        checkSpellingAnswer(fullAnswer);
+    }
+}
+
+function checkSpellingAnswer(fullAnswer) {
+    if (spellingState.userAnswer === fullAnswer) {
+        alert("Correct! 🌟");
+        spellingState.correctCount++;
+    } else {
+        alert("Wrong! The answer is: " + fullAnswer);
+    }
+    
+    // 前往下一題或結束
+    spellingState.currentQuestionIndex++;
+    if (spellingState.currentQuestionIndex < spellingState.questions.length) {
+        loadSpellingQuestion();
+    } else {
+        alert(`Game Over! Score: ${spellingState.correctCount}/${spellingState.questions.length}`);
+        showScreen('menu-screen');
+    }
 }
