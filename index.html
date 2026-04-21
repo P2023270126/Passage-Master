@@ -173,7 +173,6 @@
     <div class="game-container">
         <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Spelling Master</h2>
         
-        <!-- 💡 關鍵：JS 第 150 行很可能在找這個容器 -->
         <div id="spelling-image-container" style="display: block; min-height: 10px;"></div>
         
         <!-- 顯示題目句子 -->
@@ -185,12 +184,12 @@
                    placeholder="Type the missing word..." autocomplete="off">
         </div>
 
-<!-- 反饋文字區域 -->
-        <div id="spelling-feedback" style="font-size: 1.5rem; margin: 15px 0; font-weight: bold; min-height: 2rem;"></div>
-        
-        <!-- 💡 補上這行，解決 app.js 第 172 行的報錯 -->
+        <!-- 🚀 請在這裡插入這行：字母按鈕容器 -->
         <div id="spelling-options" style="margin: 20px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
 
+        <!-- 反饋文字區域 -->
+        <div id="spelling-feedback" style="font-size: 1.5rem; margin: 15px 0; font-weight: bold; min-height: 2rem;"></div>
+        
         <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
             <button onclick="checkSpellingAnswer()" class="option-btn" style="background-color: #007bff; color: white; width: 200px;">Check</button>
             <button onclick="showScreen('menu-screen')" class="back-btn" style="width: 200px;">Back to Menu</button>
