@@ -30,6 +30,76 @@
             box-sizing: border-box !important;
         }
 
+/* --- Tense Master 新增樣式 (插入於第 32 行) --- */
+        .word-box-container {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            justify-content: center !important;
+            margin: 20px 0 !important;
+        }
+
+        .word-box {
+            padding: 10px 15px !important;
+            border: 2px solid #ccc !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            background: white !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            transition: all 0.2s !important;
+            position: relative !important;
+        }
+
+        /* 綠色圓圈效果：正確的 Marker */
+        .word-box.correct-marker {
+            border-color: #28a745 !important;
+            background-color: #eaffea !important;
+            color: #28a745 !important;
+        }
+
+        .word-box.correct-marker::after {
+            content: '' !important;
+            position: absolute !important;
+            top: -5px !important;
+            left: -5px !important;
+            right: -5px !important;
+            bottom: -5px !important;
+            border: 3px solid #28a745 !important;
+            border-radius: 50% !important;
+            pointer-events: none !important;
+        }
+
+        /* 紅色叉叉效果：選錯的單字 */
+        .word-box.wrong-selection {
+            border-color: #dc3545 !important;
+            background-color: #ffeaea !important;
+            color: #dc3545 !important;
+        }
+
+        /* 答句顯示樣式 */
+        .sentence-display {
+            font-size: 1.3rem !important;
+            margin: 20px 0 !important;
+            color: #333 !important;
+            font-weight: 500 !important;
+        }
+
+        /* MC 選項按鈕樣式 */
+        .option-btn {
+            padding: 12px 20px !important;
+            font-size: 1.1rem !important;
+            border: 1px solid #ddd !important;
+            border-radius: 10px !important;
+            background-color: #fff !important;
+            cursor: pointer !important;
+            transition: background 0.3s !important;
+        }
+
+        .option-btn:hover {
+            background-color: #f0f0f0 !important;
+        }
+        
         /* 點擊後出現在容器內的單字樣式 */
         .selected-word {
             display: inline-block !important;
@@ -69,7 +139,8 @@
         <div class="menu-grid">
             <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
             <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
-            
+            <!-- 將 Proofread 改為 Tense Master，或者新增一個 -->
+            <button class="mode-btn" style="background-color: #e67e22;" onclick="startTenseMaster()">Tense Master (時態大師)</button>
             <!-- [新增這個按鈕] -->
             <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯與修正)</button>
         </div>
@@ -99,6 +170,28 @@
     <button onclick="showScreen('menu-screen')">返回選單</button>
 </div>
 
+<!-- Tense Master Screen -->
+<div id="tense-master-screen" class="screen" style="display:none;">
+    <h2>Step 1: Find the Tense Marker</h2>
+    <div id="tm-question-display" class="word-box-container"></div>
+    
+    <div id="tm-step1-feedback" style="margin-top: 20px; display: none;">
+        <p id="tm-marker-msg"></p>
+        <button id="tm-continue-btn" class="nav-btn">Continue to Answer</button>
+    </div>
+
+    <div id="tm-step2-area" style="margin-top: 30px; display: none;">
+        <hr>
+        <h3>Step 2: Choose the Correct Verb Form</h3>
+        <p id="tm-answer-sentence" class="sentence-display"></p>
+        <div id="tm-options-container" class="options-grid"></div>
+        <p id="tm-final-feedback"></p>
+        <button id="tm-next-btn" class="nav-btn" style="display: none;" onclick="nextTenseQuestion()">Next Question</button>
+    </div>
+
+    <button class="back-btn" onclick="showScreen('menu-screen')">Back to Menu</button>
+</div>
+    
 <!-- Rearrange 畫面 -->
 <div id="rearrange-screen" class="screen" style="display:none;">
     <h2 id="rearrange-title">Sentence Rearrange</h2>
