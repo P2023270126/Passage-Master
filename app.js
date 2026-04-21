@@ -45,14 +45,21 @@ function processGameData(rawData) {
         if (row.Mode) {
             const mode = row.Mode.trim();
             if (gameData[mode]) {
-                gameData[mode].push({
+                // 通用的資料處理
+                const item = {
                     category: row.Category,
-                    context: row.Context,        // Column C: 題目句子
-                    marker: row.Answer,         // Column D: 要點擊嘅提示詞
-                    fullSentence: row.Correction, // Column E: 填空句子
-                    verbOptions: row.Marker,     // Column F: go|went|goes
-                    finalAnswer: row.Correct_Verb // Column G: 正確答案
-                });
+                    context: row.Context,
+                    // 為了相容 Spelling，我們保留 answer 屬性
+                    answer: row.Answer || row.Correction, 
+                    
+                    // 專屬 Tense Master 的屬性
+                    marker: row.Answer,          // Column D
+                    fullSentence: row.Correction, // Column E
+                    verbOptions: row.Marker,      // Column F
+                    finalAnswer: row.Correct_Verb // Column G
+                };
+                
+                gameData[mode].push(item);
             }
         }
     });
@@ -224,9 +231,19 @@ function loadSpellingQuestion() {
     document.getElementById('spelling-feedback').style.display = 'none';
     document.getElementById('spelling-options').style.pointerEvents = 'auto'; 
     const item = spellingState.questions[spellingState.currentQuestionIndex];
-    const targetWord = item.answer.toLowerCase().trim();
-    spellingState.userAnswer = ""; 
-    const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "______");
+    // 檢查答案來源 (D 欄 Answer 或 E 欄 Correction)
+    const rawAnswer = item.answer || item.correction || "";
+    
+    if (rawAnswer === "") {
+        document.getElementById('spelling-sentence').innerText = "Data Missing!";
+        return;
+    }
+
+    const targetWord = rawAnswer.toLowerCase().trim();
+    spellingState.userAnswer = "";
+
+    // 顯示句子並替換單字為底線
+    const displaySentence = item.context.replace(new RegExp(rawAnswer, 'gi'), "_______");
     document.getElementById('spelling-sentence').innerText = displaySentence;
     const displayArea = document.getElementById('spelling-word-display');
     displayArea.innerHTML = "";
