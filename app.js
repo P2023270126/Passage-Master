@@ -2,6 +2,14 @@
  * app.js - 2026 最終整合版 (昨晚穩定版 + Tense Master)
  */
 
+// 確保 Function 名稱同 HTML 裡面 onclick 寫的一模一樣
+function selectUser(userName) {
+    console.log("Selected user:", userName);
+    // 這裡通常是儲存使用者名稱並隱藏登入畫面
+    currentUser = userName; 
+    showScreen('menu-screen'); // 或者是跳轉到主選單的 Function
+}
+
 // 1. 設定區
 const CSV_CONFIG = {
     "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv", 
