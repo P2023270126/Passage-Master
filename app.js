@@ -142,7 +142,7 @@ function startSpellingGame() {
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
     showScreen('spelling-screen');
-    145: loadSpellingQuestion(spellingState.questions[0]);
+    loadSpellingQuestion(spellingState.questions[0]);
 }
 
 function loadSpellingQuestion(q) {
