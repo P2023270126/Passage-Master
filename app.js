@@ -299,34 +299,50 @@ function checkMarker(btn, word, correctAnswer) {
     continueBtn.style.display = 'inline-block';
 }
 
-// 唯一確定的切換函式：進入 Step 2
 function goToStep2() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     
-    // 1. 隱藏 Step 1，顯示 Step 2
+    // 1. 顯示容器
     document.getElementById('tm-step1-container').style.display = 'none';
     document.getElementById('tm-step2-container').style.display = 'block';
     
-    // 2. 更新參考句子樣式 (依照你的要求：刪除 "Context:" 字樣、加粗、深綠色、放大 30%)
+    // 2. 更新上方參考句子 (深綠色、加粗、放大)
     const refArea = document.getElementById('tm-context-reference');
-    if(refArea) {
+    if (refArea) {
         refArea.innerHTML = `
-            <p style="
-                color: #1a5928; 
-                font-weight: bold; 
-                font-size: 1.3rem; 
-                margin-bottom: 20px;
-                background-color: #f0f9f1;
-                padding: 10px;
-                border-radius: 8px;
-                display: inline-block;
-            ">
+            <p style="color: #1a5928; font-weight: bold; font-size: 1.3rem; margin-bottom: 20px; background-color: #f0f9f1; padding: 10px; border-radius: 8px; display: inline-block;">
                 ${q.context}
             </p>`;
     }
-    
-    // 3. 載入 Step 2 的選擇題內容
-    loadMCStep(q);
+
+    // 3. 核心修正：確保 Step 2 的句子與選項容器存在並填入內容
+    const clozeContainer = document.getElementById('tm-cloze-sentence');
+    const optionsContainer = document.getElementById('tm-options-container');
+    const feedback = document.getElementById('tm-final-feedback');
+    const nextBtn = document.getElementById('tm-next-btn');
+
+    // 如果 HTML 裡沒這些 ID，這行會報錯，所以我們要確保它們都有顯示
+    if (clozeContainer && optionsContainer) {
+        clozeContainer.innerText = q.correction || ""; 
+        optionsContainer.innerHTML = '';
+        if (feedback) feedback.innerHTML = '';
+        if (nextBtn) nextBtn.style.display = 'none';
+
+        // 4. 產生選項按鈕
+        const rawOptions = q.options || "";
+        const opts = rawOptions.split('|').map(o => o.trim()).filter(o => o !== "");
+        opts.sort(() => Math.random() - 0.5);
+
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.className = 'option-btn'; 
+            btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
+            optionsContainer.appendChild(btn);
+        });
+    } else {
+        console.error("找不到 tm-cloze-sentence 或 tm-options-container！請檢查 HTML。");
+    }
 }
 
 function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
