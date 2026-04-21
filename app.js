@@ -146,27 +146,24 @@ function startSpellingGame() {
 }
 
 function loadSpellingQuestion(q) {
-    // 1. 先抓取元件
+    // 加上判斷式，如果抓不到元素就顯示警告，而不是直接崩潰
     const imgCont = document.getElementById('spelling-image-container');
     const sentCont = document.getElementById('spelling-sentence');
     const inputField = document.getElementById('spelling-input');
 
-    // 2. 核心修正：加上判斷式，確保元件存在才執行
-    if (imgCont) {
-        imgCont.style.display = (q.image_url && q.image_url.trim() !== "") ? 'block' : 'none';
-        if (q.image_url) imgCont.innerHTML = `<img src="${q.image_url}" style="max-width:100%; border-radius:10px;">`;
+    if (!imgCont || !sentCont || !inputField) {
+        console.error("Spelling 模式找不到必要的 HTML 元素！請檢查 index.html 的 ID。");
+        return; 
     }
 
-    if (sentCont) {
-        sentCont.innerText = q.context || "";
-    }
+    // 正常執行邏輯
+    imgCont.style.display = (q.image_url && q.image_url.trim() !== "") ? 'block' : 'none';
+    if (q.image_url) imgCont.innerHTML = `<img src="${q.image_url}" style="max-width:100%; border-radius:10px;">`;
 
-    if (inputField) {
-        inputField.value = "";
-        inputField.focus();
-    }
-    
-    // 清除舊的回饋
+    sentCont.innerText = q.context || "";
+    inputField.value = "";
+    inputField.focus();
+
     const feedback = document.getElementById('spelling-feedback');
     if (feedback) feedback.innerText = "";
 }
