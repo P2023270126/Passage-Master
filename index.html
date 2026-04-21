@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
-    <!-- 2. 強效 CSS 修正區 -->
-    <style>
+<!-- 2. 強效 CSS 修正區 -->
+<style>
 
         /* 1. 放大 Step 1 的回饋文字 (✅ Correct! / ❌ Oops!) */
 #tm-marker-msg {
@@ -163,6 +163,30 @@ button[onclick="showScreen('menu-screen')"] {
             gap: 10px !important;
             margin-top: 20px !important;
         }
+
+/* Step 2 的選項按鈕樣式 */
+.option-btn {
+    font-size: 1.5rem; /* 放大 150% */
+    padding: 15px 30px;
+    margin: 10px;
+    border: 2px solid #007bff;
+    background-color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.option-btn:hover {
+    background-color: #e7f3ff;
+    transform: translateY(-2px);
+}
+
+/* 讓 Step 1 的參考句子稍微淡一點，區分層次 */
+#tm-context-reference {
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
+
     </style>
 </head>
 <body>
