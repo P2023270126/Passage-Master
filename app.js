@@ -303,38 +303,30 @@ function checkMarker(btn, word, correctAnswer) {
 function goToStep2() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     
-    // 隱藏 Step 1，顯示 Step 2
+    // 1. 隱藏 Step 1，顯示 Step 2
     document.getElementById('tm-step1-container').style.display = 'none';
     document.getElementById('tm-step2-container').style.display = 'block';
     
-    // 顯示 Step 1 的原句供參考
+    // 2. 更新參考句子樣式 (依照你的要求：刪除 "Context:" 字樣、加粗、深綠色、放大 30%)
     const refArea = document.getElementById('tm-context-reference');
-    if(refArea) refArea.innerHTML = `<p style="color: #666; font-style: italic;">Context: ${q.context}</p>`;
-    
-    // 載入 Step 2 選擇題
-    const clozeContainer = document.getElementById('tm-cloze-sentence');
-    const optionsContainer = document.getElementById('tm-options-container');
-    const feedback = document.getElementById('tm-final-feedback');
-    const nextBtn = document.getElementById('tm-next-btn');
-
-    clozeContainer.innerText = q.correction; 
-    optionsContainer.innerHTML = '';
-    feedback.innerHTML = '';
-    nextBtn.style.display = 'none';
-
-    // 處理選項 (打散)
-    const rawOptions = q.options || "";
-    if (rawOptions) {
-        const opts = rawOptions.split('|').map(o => o.trim()).filter(o => o !== "");
-        opts.sort(() => Math.random() - 0.5);
-        opts.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerText = opt;
-            btn.className = 'option-btn'; 
-            btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
-            optionsContainer.appendChild(btn);
-        });
+    if(refArea) {
+        refArea.innerHTML = `
+            <p style="
+                color: #1a5928; 
+                font-weight: bold; 
+                font-size: 1.3rem; 
+                margin-bottom: 20px;
+                background-color: #f0f9f1;
+                padding: 10px;
+                border-radius: 8px;
+                display: inline-block;
+            ">
+                ${q.context}
+            </p>`;
     }
+    
+    // 3. 載入 Step 2 的選擇題內容
+    loadMCStep(q);
 }
 
 function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
