@@ -95,39 +95,31 @@ function fetchData(url) {
 }
 
 function processGameData(rawData) {
+    // 初始化各個模式的陣列
     gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [], TenseMaster: [] };
 
     rawData.forEach(row => {
         if (row.Mode) {
             const mode = row.Mode.trim();
             if (gameData[mode]) {
-                // 每個模式都只會抓取它需要的屬性
+                // 建立基礎物件
                 let item = {
                     category: row.Category || "",
                     context: row.Context || "",
                     answer: row.Answer || ""
                 };
 
-                // 針對不同模式額外抓取特定欄位
-                if (mode === 'Proofread' || mode === 'TenseMaster') {
-                    item.correction = row.Correction || row.correction || "";
-                }
-                
-                if (mode === 'TenseMaster') {
-                    item.options = row.Options || "";
-                    item.correct_verb = row.Correct_Verb || "";
-                }
-                
-                if (mode === 'Spelling') {
-                    item.options = row.Options || "";
-                }
+                // 強制抓取所有可能的欄位，避免漏掉
+                item.correction = row.Correction || row.correction || "";
+                item.options = row.Options || row.options || "";
+                item.correct_verb = row.Correct_Verb || row.correct_verb || "";
 
                 gameData[mode].push(item);
             }
         }
     });
+    console.log("Data loaded successfully:", gameData); // 在控制台確認資料是否有抓到
 }
-
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     document.getElementById(screenId).style.display = 'block';
