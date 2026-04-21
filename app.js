@@ -80,15 +80,28 @@ function processGameData(rawData) {
         if (row.Mode) {
             const mode = row.Mode.trim();
             if (gameData[mode]) {
-                gameData[mode].push({
+                // 每個模式都只會抓取它需要的屬性
+                let item = {
                     category: row.Category || "",
-                    // 關鍵修正：確保能抓到題目句子 (B107 所在的欄位)
-                    context: row.Context || row.context || "", 
-                    answer: row.Answer || row.answer || "",
-                    correction: row.Correction || row.correction || "",
-                    options: row.Options || row.options || "",
-                    correct_verb: row.Correct_Verb || row.correct_verb || ""
-                });
+                    context: row.Context || "",
+                    answer: row.Answer || ""
+                };
+
+                // 針對不同模式額外抓取特定欄位
+                if (mode === 'Proofread' || mode === 'TenseMaster') {
+                    item.correction = row.Correction || row.correction || "";
+                }
+                
+                if (mode === 'TenseMaster') {
+                    item.options = row.Options || "";
+                    item.correct_verb = row.Correct_Verb || "";
+                }
+                
+                if (mode === 'Spelling') {
+                    item.options = row.Options || "";
+                }
+
+                gameData[mode].push(item);
             }
         }
     });
