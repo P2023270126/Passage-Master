@@ -295,48 +295,81 @@ function handleMarkerClick(element, clickedWord, correctMarker) {
 function loadMCStep() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const step2Area = document.getElementById('tm-step2-area');
-    step2Area.style.display = 'block';
-    step2Area.scrollIntoView({ behavior: 'smooth' });
-    
-    // 顯示帶有底線的答句
-    document.getElementById('tm-answer-sentence').innerText = q.correction; // 答句樣板放在 Correction 欄位
-    
     const optionsContainer = document.getElementById('tm-options-container');
+    const feedback = document.getElementById('tm-final-feedback');
+    const nextBtn = document.getElementById('tm-next-btn');
+
+    // 1. 初始化 Step 2 介面
+    step2Area.style.display = 'block';
+    feedback.innerHTML = '';
+    nextBtn.style.display = 'none';
     optionsContainer.innerHTML = '';
 
-    // 從 options 欄位抓取選項並打散 (假設選項用 | 隔開)
-    // 如果你還沒在 processGameData 處理 options 欄位，記得去那裡加上 row.options
-    const optionsArray = (q.options || "").split('|').sort(() => Math.random() - 0.5);
+    // 2. 顯示答句樣板
+    document.getElementById('tm-answer-sentence').innerText = q.correction || "";
 
+    // 3. 處理選項：確保 Options 欄位有資料
+    const rawOptions = q.options || "";
+    if (!rawOptions) {
+        optionsContainer.innerHTML = '<p style="color:red;">Error: No options found in CSV</p>';
+        return;
+    }
+
+    // 將 "go|went|goes" 拆開並隨機排序
+    const optionsArray = rawOptions.split('|').map(s => s.trim()).filter(s => s !== "");
+    optionsArray.sort(() => Math.random() - 0.5);
+
+    // 4. 生成按鈕
     optionsArray.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = opt;
-        // 假設正確動詞答案放在另一個欄位，或我們用 q.correctVerb
-        // 這裡我們暫定正確答案是 q.correct_verb
-        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb); 
+        
+        // 確保點擊時才執行判斷，傳入正確答案
+        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
+        
         optionsContainer.appendChild(btn);
     });
+
+    // 平滑滾動到第二步
+    step2Area.scrollIntoView({ behavior: 'smooth' });
 }
 
-function checkTMAnswer(btn, selected, correct) {
+function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const feedback = document.getElementById('tm-final-feedback');
-    const fullAnswer = q.correction.replace('___', correct);
+    const nextBtn = document.getElementById('tm-next-btn');
     
+    // 安全處理：轉為小寫比較，並移除多餘空格
+    const cleanSelected = selectedValue.trim().toLowerCase();
+    const cleanCorrect = (correctAnswer || "").trim().toLowerCase();
+
+    // 禁用所有選項按鈕，防止重複點擊
     const allBtns = document.querySelectorAll('.option-btn');
     allBtns.forEach(b => b.disabled = true);
 
-    if (selected === correct) {
-        btn.style.backgroundColor = "#28a745";
-        btn.style.color = "white";
-        feedback.innerHTML = `<span style="color:green; font-weight:bold;">✅ Well done!</span><br>${fullAnswer}`;
+    // 組合完整句子用於語音和顯示
+    const fullSentence = q.correction.replace('___', (correctAnswer || "____"));
+
+    if (cleanSelected === cleanCorrect) {
+        // 答對了
+        clickedBtn.style.backgroundColor = "#28a745";
+        clickedBtn.style.color = "white";
+        feedback.innerHTML = `<div style="color:#28a745; font-weight:bold; margin-top:10px;">✅ Excellent!</div><div style="font-size:1.1em; margin-top:5px;">${fullSentence}</div>`;
         tmState.correctCount++;
     } else {
-        btn.style.backgroundColor = "#dc3545";
-        btn.style.color = "white";
-        feedback.innerHTML = `<span style="color:red; font-weight:bold;">❌ Focus on the tense!</span><br>The answer is: <b>${correct}</b><br>${fullAnswer}`;
+        // 答錯了
+        clickedBtn.style.backgroundColor = "#dc3545";
+        clickedBtn.style.color = "white";
+        feedback.innerHTML = `<div style="color:#dc3545; font-weight:bold; margin-top:10px;">❌ Focus on the tense!</div><div style="margin-top:5px;">The answer is: <b style="color:#28a745">${correctAnswer}</b></div><div style="font-size:1.1em; margin-top:5px;">${fullSentence}</div>`;
     }
+
+    // 播放完整句子語音
+    speak(fullSentence);
+    
+    // 顯示「下一題」按鈕
+    nextBtn.style.display = 'inline-block';
+}
 
     // 播放語音
     speak(q.context + " ... " + fullAnswer);
