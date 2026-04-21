@@ -84,18 +84,19 @@ function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const sentenceCont = document.getElementById('tm-sentence-container');
     const feedback = document.getElementById('tm-feedback');
-    const instruction = document.getElementById('tm-instruction'); // 攞埋指示文字個 ID
+    const instruction = document.getElementById('tm-instruction');
     
     feedback.innerText = "";
+    // 清除舊有的 Continue 按鈕（如果有）
+    const oldBtn = document.getElementById('tm-continue-step-btn');
+    if (oldBtn) oldBtn.remove();
+
     tmState.selectedMarker = false;
-    
-    // 修正 Step 1 指示文字
     if(instruction) instruction.innerText = "Step 1: Find the Marker"; 
     
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
     
-    // 建立結構：重點係將 tm-fill-blank-line 預設變做 display: none
     sentenceCont.innerHTML = `
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
         <div id="tm-fill-blank-line" style="font-weight: bold; color: #2c3e50; margin-top: 15px; display: none;">${q.fullSentence}</div>
@@ -113,6 +114,7 @@ function loadTenseQuestion() {
             if (tmState.selectedMarker) return;
             tmState.selectedMarker = true;
             
+            // 顯示反饋
             if (cleanWord === targetMarker) {
                 span.classList.add('selected');
                 feedback.innerText = "🎯 Well found!";
@@ -122,12 +124,19 @@ function loadTenseQuestion() {
                 feedback.innerText = `💡 Note: "${q.marker}" is the marker.`;
             }
             
-            // 撳完之後，延遲顯示 Step 2 同埋答題句
-            setTimeout(() => {
+            // --- 重點：產生 Continue 按鈕 ---
+            const contBtn = document.createElement('button');
+            contBtn.id = "tm-continue-step-btn";
+            contBtn.innerText = "Continue →";
+            contBtn.className = "next-btn"; // 使用你原本 CSS 裡的按鈕樣式
+            contBtn.style.marginTop = "10px";
+            contBtn.onclick = () => {
                 showTmOptions(q);
-                // 顯示返答題句
-                document.getElementById('tm-fill-blank-line').style.display = "block"; 
-            }, 800);
+                document.getElementById('tm-fill-blank-line').style.display = "block";
+                contBtn.remove(); // 進入 Step 2 後移除自己
+            };
+            feedback.appendChild(document.createElement('br'));
+            feedback.appendChild(contBtn);
         };
         qLine.appendChild(span);
     });
@@ -137,37 +146,26 @@ function showTmOptions(q) {
     const optionsCont = document.getElementById('tm-options');
     const feedback = document.getElementById('tm-feedback');
     const instruction = document.getElementById('tm-instruction');
-    const fillBlankLine = document.getElementById('tm-fill-blank-line'); // 新增這行
-
+    
     optionsCont.innerHTML = "";
+    feedback.innerText = ""; // 清除 Step 1 的反饋文字和按鈕
     document.getElementById('tm-step2-area').style.display = "block";
-
-    // 1. 確保顯示答題句 (因為 Step 1 被隱藏了)
-    if (fillBlankLine) {
-        fillBlankLine.style.display = "block";
-    }
-
-    // 2. 更新指示文字
-    if (instruction) {
-        instruction.innerText = "Step 2: Choose the Correct Verb";
-    }
+    
+    if(instruction) instruction.innerText = "Step 2: Choose the Correct Verb";
 
     const opts = (q.verbOptions || "").split('|').map(s => s.trim());
-
+    
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
         btn.innerText = opt;
         btn.onclick = () => {
             if (opt === q.finalAnswer) {
-                feedback.innerText = "✅ Perfect! Listen to the sentence.";
+                feedback.innerText = "✅ Perfect!";
                 feedback.style.color = "green";
-
-                // 將底線換成正確答案並朗讀
                 const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
-                if (fillBlankLine) fillBlankLine.innerText = finalSentence;
+                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
                 speak(finalSentence);
-
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
                 optionsCont.style.pointerEvents = "none";
@@ -178,9 +176,7 @@ function showTmOptions(q) {
         };
         optionsCont.appendChild(btn);
     });
-    optionsCont.style.pointerEvents = "auto";
 }
-
 function nextTenseQuestion() {
     tmState.currentQuestionIndex++;
     if (tmState.currentQuestionIndex < tmState.questions.length) {
