@@ -133,11 +133,12 @@ function logout() {
 function startSpellingGame() {
     const questions = gameData.Spelling;
     if (questions.length === 0) return alert("找不到拼字題目！");
-    
-    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
+
     updateCategoryDropdown('Spelling'); 
 
-    spellingState.questions = [...questions]; 
+    // 打亂拼字題目順序
+    spellingState.questions = shuffleArray([...questions]); 
+    
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
     showScreen('spelling-screen');
@@ -221,10 +222,11 @@ function startRearrangeGame() {
     const questions = gameData.Rearrange;
     if (!questions || questions.length === 0) return alert("找不到重組題目！");
 
-    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
     updateCategoryDropdown('Rearrange');
 
-    rearrangeState.questions = [...questions];
+    // 打亂重組題目順序
+    rearrangeState.questions = shuffleArray([...questions]);
+
     rearrangeState.currentQuestionIndex = 0;
     rearrangeState.correctCount = 0;
     showScreen('rearrange-screen');
@@ -236,14 +238,13 @@ function startRearrangeGame() {
  */
 function startTenseMaster() {
     const questions = gameData.TenseMaster || []; 
-    if (questions.length === 0) {
-        return alert("找不到 Tense Master 題目！請檢查 Google Sheet 的 Mode 欄位是否為 TenseMaster");
-    }
+    if (questions.length === 0) return alert("找不到題目！");
 
-    tmState.questions = [...questions];
+    // 將複製出來的題目陣列打亂順序
+    tmState.questions = shuffleArray([...questions]); 
+    
     tmState.currentQuestionIndex = 0;
     tmState.correctCount = 0;
-    
     showScreen('tense-master-screen');
     loadTenseQuestion();
 }
