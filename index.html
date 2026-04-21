@@ -215,25 +215,31 @@ button[onclick="showScreen('menu-screen')"] {
 
 <!-- Tense Master Screen -->
 <div id="tense-master-screen" class="screen" style="display:none;">
-    <h2>Step 1: Click the Tense Marker</h2>
-    <!-- 確保這個 ID 是 tm-question-display -->
-    <div id="tm-question-display" class="word-box-container"></div>
-    
-    <div id="tm-step1-feedback" style="margin-top: 20px; display: none;">
-        <p id="tm-marker-msg"></p>
-        <button id="tm-continue-btn" class="nav-btn">Continue ^_^ </button>
+    <!-- Step 1 容器 -->
+    <div id="tm-step1-container">
+        <h2 style="font-size: 2rem;">Step 1: Click the Tense Marker</h2>
+        <div id="tm-sentence-container"></div>
+        <div id="tm-marker-msg"></div> <!-- 放大的回饋文字 -->
+        <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
+        <br>
+        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
     </div>
 
-    <div id="tm-step2-area" style="margin-top: 30px; display: none;">
-        <hr>
-        <h3>Step 2: Choose the Correct Verb Form</h3>
-        <p id="tm-answer-sentence" class="sentence-display"></p>
-        <div id="tm-options-container" class="options-grid"></div>
-        <p id="tm-final-feedback"></p>
-        <button id="tm-next-btn" class="nav-btn" style="display: none;" onclick="nextTenseQuestion()">Next Question</button>
+    <!-- Step 2 容器 (初始隱藏) -->
+    <div id="tm-step2-container" style="display:none;">
+        <h2 style="font-size: 2rem;">Step 2: Choose the Correct Verb Form</h2>
+        
+        <!-- 新增：用來重複顯示 Step 1 的原句 -->
+        <div id="tm-context-reference" style="font-size: 1.5rem; color: #555; margin-bottom: 20px; font-style: italic;"></div>
+        
+        <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin-bottom: 20px;"></div>
+        <div id="tm-options-container"></div>
+        <div id="tm-final-feedback"></div>
+        
+        <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
+        <br>
+        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
     </div>
-
-    <button class="back-btn" onclick="showScreen('menu-screen')">Back to Menu</button>
 </div>
     
 <!-- Rearrange 畫面 -->
