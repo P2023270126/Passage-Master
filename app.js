@@ -125,9 +125,15 @@ function loadTenseQuestion() {
             contBtn.innerText = "Continue →";
             contBtn.className = "next-btn"; 
             contBtn.style.display = "block";
-            contBtn.style.margin = "15px auto";
+            
+            // --- 加入以下樣式修改 ---
+            contBtn.style.margin = "40px auto";    // 增加上下邊距，避免放大後太擠
+            contBtn.style.transform = "scale(2)"; // 放大 2 倍
+            contBtn.style.fontSize = "16px";      // 確保文字清晰
+            // -----------------------
+
             contBtn.onclick = () => {
-                switchToStep2(q); // 呼叫中轉邏輯
+                switchToStep2(q); 
             };
             feedback.appendChild(contBtn);
         };
