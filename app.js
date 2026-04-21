@@ -310,7 +310,7 @@ function goToStep2() {
     const refArea = document.getElementById('tm-context-reference');
     if (refArea) {
         refArea.innerHTML = `
-            <p style="color: #1a5928; font-weight: bold; font-size: 2.5rem; margin-bottom: 20px; background-color: #f0f9f1; padding: 10px; border-radius: 8px; display: inline-block;">
+            <p style="color: #1a5928; font-weight: bold; font-size: 2.0rem; margin-bottom: 20px; background-color: #f0f9f1; padding: 10px; border-radius: 8px; display: inline-block;">
                 ${q.context}
             </p>`;
     }
