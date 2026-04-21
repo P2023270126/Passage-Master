@@ -110,34 +110,45 @@
     </div>
 </div>
 
-    <!-- Tense Master 遊戲畫面 -->
-    <div id="tense-master-screen" class="screen">
-        <div class="game-container">
+<!-- Tense Master 遊戲畫面 -->
+<div id="tense-master-screen" class="screen" style="display:none;">
+    <div class="game-container">
+        
+        <!-- Step 1 區域：選時態標記 -->
+        <div id="tm-step1-container">
+            <h2 style="font-size: 2rem; color: #333;">Step 1: Click the Tense Marker</h2>
+            <!-- 單字按鈕會產生在這裡 -->
+            <div id="tm-sentence-container" style="display: flex; flex-wrap: wrap; justify-content: center; margin: 25px 0; gap: 10px;"></div>
             
-            <!-- Step 1 區域 -->
-            <div id="tm-step1-container">
-                <h2 style="font-size: 2rem;">Step 1: Click the Tense Marker</h2>
-                <div id="tm-sentence-container" style="display: flex; flex-wrap: wrap; justify-content: center; margin: 20px 0;"></div>
-                <div id="tm-marker-msg"></div>
-                <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
-                <br>
-                <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-            </div>
-
-            <!-- Step 2 區域 -->
-            <div id="tm-step2-container" style="display:none;">
-                <h2 style="font-size: 2rem;">Step 2: Choose the Correct Verb Form</h2>
-                <div id="tm-context-reference"></div>
-                <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin: 20px 0;"></div>
-                <div id="tm-options-container"></div>
-                <div id="tm-final-feedback"></div>
-                <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
-                <br>
-                <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-            </div>
-
+            <div id="tm-marker-msg"></div> <!-- 放大回饋文字 -->
+            
+            <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
+            <br>
+            <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
         </div>
+
+        <!-- Step 2 區域：選正確動詞 (初始隱藏) -->
+        <div id="tm-step2-container" style="display:none;">
+            <h2 style="font-size: 2rem; color: #333;">Step 2: Choose the Correct Verb Form</h2>
+            
+            <!-- 顯示 Step 1 的完整句子作為上下文參考 -->
+            <div id="tm-context-reference"></div>
+            
+            <!-- 填充題句子 -->
+            <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin: 25px 0; font-weight: bold;"></div>
+            
+            <!-- 三個選項按鈕會產生在這裡 -->
+            <div id="tm-options-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;"></div>
+            
+            <div id="tm-final-feedback"></div>
+            
+            <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
+            <br>
+            <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+        </div>
+
     </div>
+</div>
 
     <script src="app.js"></script>
 </body>
