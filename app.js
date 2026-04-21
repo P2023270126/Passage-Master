@@ -145,23 +145,30 @@ function startSpellingGame() {
     loadSpellingQuestion();
 }
 
-function loadSpellingQuestion() {
-    document.getElementById('spelling-feedback').style.display = 'none';
-    document.getElementById('spelling-options').style.pointerEvents = 'auto'; 
-    const item = spellingState.questions[spellingState.currentQuestionIndex];
-    const targetWord = item.answer.toLowerCase().trim();
-    spellingState.userAnswer = ""; 
-    const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "______");
-    document.getElementById('spelling-sentence').innerText = displaySentence;
-    const displayArea = document.getElementById('spelling-word-display');
-    displayArea.innerHTML = "";
-    for (let i = 0; i < targetWord.length; i++) {
-        const span = document.createElement('span');
-        span.className = "letter-slot";
-        span.innerText = "_";
-        displayArea.appendChild(span);
+function loadSpellingQuestion(q) {
+    // 1. 先抓取元件
+    const imgCont = document.getElementById('spelling-image-container');
+    const sentCont = document.getElementById('spelling-sentence');
+    const inputField = document.getElementById('spelling-input');
+
+    // 2. 核心修正：加上判斷式，確保元件存在才執行
+    if (imgCont) {
+        imgCont.style.display = (q.image_url && q.image_url.trim() !== "") ? 'block' : 'none';
+        if (q.image_url) imgCont.innerHTML = `<img src="${q.image_url}" style="max-width:100%; border-radius:10px;">`;
     }
-    renderLetterButtons(targetWord, item.options);
+
+    if (sentCont) {
+        sentCont.innerText = q.context || "";
+    }
+
+    if (inputField) {
+        inputField.value = "";
+        inputField.focus();
+    }
+    
+    // 清除舊的回饋
+    const feedback = document.getElementById('spelling-feedback');
+    if (feedback) feedback.innerText = "";
 }
 
 function renderLetterButtons(answer, extraOptions) {
