@@ -136,7 +136,11 @@
         <h2>Tense Master</h2>
         <div class="game-container">
             <h3 id="tm-instruction">Step 1: Click the Time Marker (時態提示詞)</h3>
-            <div id="tm-sentence-container" style="font-size: 1.5rem; line-height: 2; margin: 30px 0;"></div>
+            <!-- 原本 139 行： -->
+            <div id="tm-sentence-container" style="font-size: 1.5rem; line-height: 2; margin: 30px 0;">
+                <!-- 建議裡面加多一個 div 專門放底線句子 -->
+                <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc; margin-top: 15px;"></div>
+            </div>
             
             <div id="tm-step2-area" style="display:none; border-top: 2px solid #eee; padding-top: 20px;">
                 <p>Step 2: Select the correct Verb Form</p>
