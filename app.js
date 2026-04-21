@@ -84,16 +84,21 @@ function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const sentenceCont = document.getElementById('tm-sentence-container');
     const feedback = document.getElementById('tm-feedback');
+    const instruction = document.getElementById('tm-instruction'); // 攞埋指示文字個 ID
     
     feedback.innerText = "";
     tmState.selectedMarker = false;
+    
+    // 修正 Step 1 指示文字
+    if(instruction) instruction.innerText = "Step 1: Find the Marker"; 
+    
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
     
-    // 建立結構
+    // 建立結構：重點係將 tm-fill-blank-line 預設變做 display: none
     sentenceCont.innerHTML = `
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
-        <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc; margin-top: 15px;">${q.fullSentence}</div>
+        <div id="tm-fill-blank-line" style="font-weight: bold; color: #2c3e50; margin-top: 15px; display: none;">${q.fullSentence}</div>
     `;
 
     const targetMarker = (q.marker || "").trim().toLowerCase();
@@ -117,9 +122,11 @@ function loadTenseQuestion() {
                 feedback.innerText = `💡 Note: "${q.marker}" is the marker.`;
             }
             
+            // 撳完之後，延遲顯示 Step 2 同埋答題句
             setTimeout(() => {
                 showTmOptions(q);
-                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; 
+                // 顯示返答題句
+                document.getElementById('tm-fill-blank-line').style.display = "block"; 
             }, 800);
         };
         qLine.appendChild(span);
@@ -130,13 +137,23 @@ function showTmOptions(q) {
     const optionsCont = document.getElementById('tm-options');
     const feedback = document.getElementById('tm-feedback');
     const instruction = document.getElementById('tm-instruction');
-    
+    const fillBlankLine = document.getElementById('tm-fill-blank-line'); // 新增這行
+
     optionsCont.innerHTML = "";
     document.getElementById('tm-step2-area').style.display = "block";
-    if(instruction) instruction.innerText = "Step 2: Choose the Correct Verb";
+
+    // 1. 確保顯示答題句 (因為 Step 1 被隱藏了)
+    if (fillBlankLine) {
+        fillBlankLine.style.display = "block";
+    }
+
+    // 2. 更新指示文字
+    if (instruction) {
+        instruction.innerText = "Step 2: Choose the Correct Verb";
+    }
 
     const opts = (q.verbOptions || "").split('|').map(s => s.trim());
-    
+
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
@@ -145,11 +162,12 @@ function showTmOptions(q) {
             if (opt === q.finalAnswer) {
                 feedback.innerText = "✅ Perfect! Listen to the sentence.";
                 feedback.style.color = "green";
-                
+
+                // 將底線換成正確答案並朗讀
                 const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
-                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
+                if (fillBlankLine) fillBlankLine.innerText = finalSentence;
                 speak(finalSentence);
-                
+
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
                 optionsCont.style.pointerEvents = "none";
