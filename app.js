@@ -80,6 +80,7 @@ function startTenseMaster() {
     loadTenseQuestion();
 }
 
+// 1. 第一階段：載入單字點擊 (Step 1)
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const sentenceCont = document.getElementById('tm-sentence-container');
@@ -87,16 +88,13 @@ function loadTenseQuestion() {
     const instruction = document.getElementById('tm-instruction');
     
     feedback.innerText = "";
-    // 清除舊有的 Continue 按鈕（如果有）
-    const oldBtn = document.getElementById('tm-continue-step-btn');
-    if (oldBtn) oldBtn.remove();
-
     tmState.selectedMarker = false;
     if(instruction) instruction.innerText = "Step 1: Find the Marker"; 
     
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
     
+    // 初始化結構：隱藏答題句 (tm-fill-blank-line)
     sentenceCont.innerHTML = `
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
         <div id="tm-fill-blank-line" style="font-weight: bold; color: #2c3e50; margin-top: 15px; display: none;">${q.fullSentence}</div>
@@ -114,60 +112,60 @@ function loadTenseQuestion() {
             if (tmState.selectedMarker) return;
             tmState.selectedMarker = true;
             
-            // 顯示反饋
             if (cleanWord === targetMarker) {
                 span.classList.add('selected');
-                feedback.innerText = "🎯 Well found!";
-                feedback.style.color = "green";
+                feedback.innerHTML = `<span style="color: green;">🎯 Well found!</span>`;
             } else {
                 span.style.color = "orange";
-                feedback.innerText = `💡 Note: "${q.marker}" is the marker.`;
+                feedback.innerHTML = `<span style="color: orange;">💡 Note: "${q.marker}" is the marker.</span>`;
             }
-            
-            // --- 重點：產生 Continue 按鈕 ---
+
+            // 產生 Continue 按鈕
             const contBtn = document.createElement('button');
-            contBtn.id = "tm-continue-step-btn";
             contBtn.innerText = "Continue →";
-            contBtn.className = "next-btn"; // 使用你原本 CSS 裡的按鈕樣式
-            contBtn.style.marginTop = "10px";
+            contBtn.className = "next-btn"; 
+            contBtn.style.display = "block";
+            contBtn.style.margin = "15px auto";
             contBtn.onclick = () => {
-                contBtn.onclick = () => {
-    // 1. 執行 Step 2 的選項生成邏輯
-    showTmOptions(q);
-
-    // 2. 顯示原本隱藏的答題句 (帶有底線的那句)
-    const fillBlankLine = document.getElementById('tm-fill-blank-line');
-    if (fillBlankLine) {
-        fillBlankLine.style.display = "block";
-    }
-
-    // 3. 【重點】將原本點擊單字的區域替換為「藍色粗體」的完整句子
-    const qLine = document.getElementById('tm-question-line');
-    if (qLine) {
-        qLine.innerHTML = `<span style="color: #007bff; font-weight: bold; font-size: 1.25rem;">${q.context}</span>`;
-        qLine.style.borderBottom = "none"; // 移除底部分隔線，讓視覺更乾淨
-    }
-
-    // 4. 移除 Continue 按鈕
-    contBtn.remove();
-};
+                switchToStep2(q); // 呼叫中轉邏輯
             };
-            feedback.appendChild(document.createElement('br'));
             feedback.appendChild(contBtn);
         };
         qLine.appendChild(span);
     });
 }
 
+// 2. 中轉邏輯：切換 UI 到 Step 2
+function switchToStep2(q) {
+    const feedback = document.getElementById('tm-feedback');
+    const qLine = document.getElementById('tm-question-line');
+    const fillBlankLine = document.getElementById('tm-fill-blank-line');
+
+    feedback.innerHTML = ""; 
+    
+    // 題目變藍色粗體
+    if (qLine) {
+        qLine.innerHTML = `<span style="color: #007bff; font-weight: bold; font-size: 1.25rem;">${q.context}</span>`;
+        qLine.style.borderBottom = "none";
+    }
+
+    // 顯示帶底線的答題句
+    if (fillBlankLine) {
+        fillBlankLine.style.display = "block";
+    }
+
+    // 進入選項生成
+    showTmOptions(q);
+}
+
+// 3. 第二階段：生成動詞選項 (Step 2)
 function showTmOptions(q) {
     const optionsCont = document.getElementById('tm-options');
     const feedback = document.getElementById('tm-feedback');
     const instruction = document.getElementById('tm-instruction');
     
     optionsCont.innerHTML = "";
-    feedback.innerText = ""; // 清除 Step 1 的反饋文字和按鈕
     document.getElementById('tm-step2-area').style.display = "block";
-    
     if(instruction) instruction.innerText = "Step 2: Choose the Correct Verb";
 
     const opts = (q.verbOptions || "").split('|').map(s => s.trim());
@@ -177,23 +175,31 @@ function showTmOptions(q) {
         btn.className = "letter-btn";
         btn.innerText = opt;
         btn.onclick = () => {
-            if (opt === q.finalAnswer) {
-                feedback.innerText = "✅ Perfect!";
-                feedback.style.color = "green";
-                const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
-                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
+            if (opt.trim() === q.finalAnswer.trim()) {
+                feedback.innerHTML = `<span style="color: green;">✅ Perfect! Listen to the sentence.</span>`;
+                
+                // 替換底線並將文字變藍色
+                const finalSentence = q.fullSentence.replace(/___/g, q.finalAnswer);
+                const fillLine = document.getElementById('tm-fill-blank-line');
+                if (fillLine) {
+                    fillLine.innerText = finalSentence;
+                    fillLine.style.color = "#007bff";
+                }
+                
                 speak(finalSentence);
+                
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
                 optionsCont.style.pointerEvents = "none";
             } else {
-                feedback.innerText = "❌ Try another form!";
-                feedback.style.color = "red";
+                feedback.innerHTML = `<span style="color: red;">❌ Try another form!</span>`;
             }
         };
         optionsCont.appendChild(btn);
     });
+    optionsCont.style.pointerEvents = "auto";
 }
+
 function nextTenseQuestion() {
     tmState.currentQuestionIndex++;
     if (tmState.currentQuestionIndex < tmState.questions.length) {
