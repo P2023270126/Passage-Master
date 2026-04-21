@@ -68,9 +68,12 @@ let tmState = {
  */
 function selectUser(userId) {
     currentUser = userId;
+    console.log("Selected user ID:", userId);
+    
     const url = CSV_CONFIG[userId];
     if (url) {
-        document.getElementById('welcome-msg').innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
+        const name = userId === '66' ? 'Jasper' : 'Jolie';
+        document.getElementById('welcome-msg').innerText = `Welcome, ${name}`;
         fetchData(url);
     } else {
         alert("錯誤：找不到設定的 URL");
@@ -376,12 +379,6 @@ function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
     }
 
     speak(fullSentence);
-    document.getElementById('tm-next-btn').style.display = 'inline-block';
-}
-
-    // 播放語音
-    speak(q.context + " ... " + fullAnswer);
-    
     document.getElementById('tm-next-btn').style.display = 'inline-block';
 }
 
