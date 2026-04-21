@@ -219,8 +219,14 @@ function nextTenseQuestion() {
 function startSpellingGame() {
     const questions = gameData.Spelling;
     if (questions.length === 0) return alert("找不到拼字題目！");
-    updateCategoryDropdown('Spelling'); 
-    spellingState.questions = [...questions]; 
+    
+    updateCategoryDropdown('Spelling');
+    
+    // --- 修改這部分：將題目進行亂序處理 ---
+    // [...questions] 是為了複製一份資料，不影響原始資料順序
+    spellingState.questions = [...questions].sort(() => Math.random() - 0.5);
+    // ------------------------------------
+
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
     showScreen('spelling-screen');
