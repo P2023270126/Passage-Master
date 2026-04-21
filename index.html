@@ -108,25 +108,23 @@
     <div class="game-container">
         <h2 id="welcome-msg" style="font-size: 2.5rem; margin-bottom: 30px;">Welcome</h2>
         
-        <!-- 選單按鈕區域 -->
-        <div class="menu-grid" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-            
-            <!-- 確保 Tense Master 以外的按鈕也都在這裡 -->
-            <button class="option-btn" style="width: 250px;" onclick="startSpelling()">Spelling Master</button>
-            <button class="option-btn" style="width: 250px;" onclick="startRearrange()">Sentence Hero</button>
-            <button class="option-btn" style="width: 250px;" onclick="startProofread()">Proofreading</button>
-            <button class="option-btn" style="width: 250px;" onclick="startCloze()">Cloze Test</button>
-            
-            <!-- 你目前正在優化的 Tense Master -->
-            <button class="option-btn" style="width: 250px; border-color: #007bff; color: #007bff;" onclick="startTenseMaster()">
-                Tense Master
-            </button>
-
-            <hr style="width: 100%; margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            
-            <!-- 返回登入頁 -->
-            <button class="back-btn" onclick="showScreen('login-screen')">Switch User</button>
-        </div>
+<!-- 選單按鈕區域 -->
+    <div class="menu-grid" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+        
+        <!-- 修正後的按鈕連結 -->
+        <button class="option-btn" style="width: 250px;" onclick="startSpellingGame()">Spelling Master</button>
+        <button class="option-btn" style="width: 250px;" onclick="startRearrangeGame()">Sentence Hero</button>
+        <button class="option-btn" style="width: 250px;" onclick="startProofreadingGame()">Proofreading</button>
+        <button class="option-btn" style="width: 250px;" onclick="startClozeGame()">Cloze Test</button>
+        
+        <button class="option-btn" style="width: 250px; border-color: #007bff; color: #007bff;" onclick="startTenseMaster()">
+            Tense Master
+        </button>
+    
+        <hr style="width: 100%; margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <button class="back-btn" onclick="showScreen('login-screen')">Switch User</button>
+    </div>
     </div>
 </div>
 
@@ -170,6 +168,35 @@
     </div>
 </div>
 
+<!-- Spelling Master 遊戲畫面 -->
+<div id="spelling-screen" class="screen">
+    <div class="game-container">
+        <h2 style="font-size: 2rem;">Spelling Master</h2>
+        <div id="spelling-image-container"></div>
+        <p id="spelling-sentence" style="font-size: 1.8rem; margin: 20px 0;"></p>
+        <input type="text" id="spelling-input" style="font-size: 1.8rem; padding: 10px; width: 80%; text-align: center;" autocomplete="off">
+        <div id="spelling-feedback" style="margin-top: 20px; font-size: 1.5rem;"></div>
+        <br>
+        <button onclick="checkSpellingAnswer()" class="option-btn">Check</button>
+        <br>
+        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+    </div>
+</div>
+
+<!-- Sentence Hero (Rearrange) 遊戲畫面 -->
+<div id="rearrange-screen" class="screen">
+    <div class="game-container">
+        <h2 style="font-size: 2rem;">Sentence Hero</h2>
+        <div id="rearrange-words-container" style="margin: 25px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
+        <div id="rearrange-answer-container" style="min-height: 60px; border: 2px dashed #007bff; padding: 15px; margin-bottom: 25px; border-radius: 10px; background: #f8f9fa;"></div>
+        <div id="rearrange-feedback" style="font-size: 1.5rem;"></div>
+        <br>
+        <button onclick="checkRearrangeAnswer()" class="option-btn">Submit Answer</button>
+        <button onclick="resetRearrange()" class="back-btn">Reset</button>
+        <br>
+        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+    </div>
+</div>    
     <script src="app.js"></script>
 </body>
 </html>
