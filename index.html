@@ -4,107 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Passage Master</title>
-    <!-- 1. 外部資源 -->
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
-<!-- 2. 強效 CSS 修正區 -->
-<style>
-    /* ... 你原本其他的 CSS ... */
+    <style>
+        /* 基礎樣式：確保螢幕切換正常 */
+        .screen { display: none; text-align: center; padding: 20px; }
+        .game-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
 
-    /* 1. 放大 Step 1 的回饋文字 */
-    #tm-marker-msg {
-        font-size: 1.5rem; 
-        margin: 20px 0;
-        line-height: 1.4;
-    }
+        /* Step 1 單字按鈕樣式 (重要：沒這段按鈕會很醜) */
+        .word-btn {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            margin: 5px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-    /* 2. 按鈕美化：Continue, Back, Next */
-    #tm-continue-btn, 
-    #tm-next-btn,
-    .back-btn {
-        font-size: 1.25rem;
-        padding: 12px 24px;
-        cursor: pointer;
-        background-color: #f8f9fa;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        transition: all 0.2s;
-        margin: 10px 5px;
-    }
+        /* 1. 放大 Step 1 的回饋文字 */
+        #tm-marker-msg {
+            font-size: 1.5rem; 
+            margin: 20px 0;
+            line-height: 1.4;
+        }
 
-    #tm-next-btn {
-        background-color: #007bff;
-        color: white;
-        border: none;
-    }
+        /* 2. 按鈕美化 */
+        #tm-continue-btn, #tm-next-btn, .back-btn {
+            font-size: 1.25rem;
+            padding: 12px 24px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin: 10px 5px;
+        }
 
-    #tm-continue-btn:hover, .back-btn:hover {
-        background-color: #e2e6ea;
-        transform: scale(1.05);
-    }
+        #tm-next-btn { background-color: #007bff; color: white; border: none; }
+        #tm-continue-btn:hover, .back-btn:hover { background-color: #e2e6ea; transform: scale(1.05); }
 
-    /* 3. Step 2 專用樣式 */
-    #tm-context-reference {
-        border-bottom: 1px dashed #ccc;
-        padding-bottom: 10px;
-        color: #666;
-        font-style: italic;
-        font-size: 1.5rem;
-        margin-bottom: 20px;
-    }
+        /* 3. Step 2 專用樣式 */
+        #tm-context-reference {
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+            color: #666;
+            font-style: italic;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+        }
 
-    .option-btn {
-        font-size: 1.5rem; 
-        padding: 15px 30px;
-        margin: 10px;
-        border: 2px solid #007bff;
-        background-color: white;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
+        .option-btn {
+            font-size: 1.5rem; 
+            padding: 15px 30px;
+            margin: 10px;
+            border: 2px solid #007bff;
+            background-color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-    .option-btn:hover {
-        background-color: #e7f3ff;
-        transform: translateY(-2px);
-    }
-
-    #tm-final-feedback {
-        font-size: 1.5rem;
-        margin: 15px 0;
-    }
-</style>
+        .option-btn:hover { background-color: #e7f3ff; transform: translateY(-2px); }
+        #tm-final-feedback { font-size: 1.5rem; margin: 15px 0; }
+    </style>
 </head>
 <body>
-    <!-- ... 其他螢幕內容 ... -->
 
-    <div id="tense-master-screen" class="screen" style="display:none;">
+    <!-- 登入畫面 (確保這段存在，否則首頁是白的) -->
+    <div id="login-screen" class="screen" style="display: block;">
+        <div class="game-container">
+            <h1>English Passage Master</h1>
+            <p>Select your profile:</p>
+            <button class="option-btn" onclick="selectUser('66')">66 Jasper</button>
+            <button class="option-btn" onclick="selectUser('88')">88 Jolie</button>
+        </div>
+    </div>
+
+    <!-- 主選單畫面 -->
+    <div id="menu-screen" class="screen">
+        <div class="game-container">
+            <h2 id="welcome-msg">Welcome</h2>
+            <div class="menu-grid">
+                <button class="option-btn" onclick="startTenseMaster()">Tense Master</button>
+                <!-- 其他按鈕... -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tense Master 遊戲畫面 -->
+    <div id="tense-master-screen" class="screen">
         <div class="game-container">
             
             <!-- Step 1 區域 -->
             <div id="tm-step1-container">
                 <h2 style="font-size: 2rem;">Step 1: Click the Tense Marker</h2>
-                <div id="tm-sentence-container" class="word-box-container"></div>
+                <div id="tm-sentence-container" style="display: flex; flex-wrap: wrap; justify-content: center; margin: 20px 0;"></div>
                 <div id="tm-marker-msg"></div>
                 <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
                 <br>
                 <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
             </div>
 
-            <!-- Step 2 區域 (初始隱藏) -->
+            <!-- Step 2 區域 -->
             <div id="tm-step2-container" style="display:none;">
                 <h2 style="font-size: 2rem;">Step 2: Choose the Correct Verb Form</h2>
-                
-                <!-- 這裡會顯示 Step 1 的句子作為參考 -->
                 <div id="tm-context-reference"></div>
-                
-                <!-- 這裡會顯示 I ___ to the park... -->
                 <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin: 20px 0;"></div>
-                
                 <div id="tm-options-container"></div>
                 <div id="tm-final-feedback"></div>
-                
                 <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
                 <br>
                 <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
@@ -113,6 +123,6 @@
         </div>
     </div>
 
-    <!-- 記得把你在 <body> 裡面誤貼的中文解釋文字刪掉 -->
+    <script src="app.js"></script>
 </body>
 </html>
