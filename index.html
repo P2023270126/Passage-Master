@@ -171,24 +171,30 @@
 <!-- Spelling Master 遊戲畫面 -->
 <div id="spelling-screen" class="screen">
     <div class="game-container">
-        <h2 style="font-size: 2rem;">Spelling Master</h2>
+        <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Spelling Master</h2>
         
-        <!-- 💡 確保這三個 ID 準確無誤，JS 需要它們來填入資料 -->
-        <div id="spelling-image-container" style="margin-bottom: 15px;"></div>
-        <div id="spelling-sentence" style="font-size: 1.8rem; margin: 25px 0; font-weight: bold;"></div>
+        <!-- 💡 關鍵：JS 第 150 行很可能在找這個容器 -->
+        <div id="spelling-image-container" style="display: block; min-height: 10px;"></div>
+        
+        <!-- 顯示題目句子 -->
+        <div id="spelling-sentence" style="font-size: 1.8rem; margin: 25px 0; font-weight: bold; line-height: 1.6;"></div>
         
         <div style="margin: 20px 0;">
-            <input type="text" id="spelling-input" style="font-size: 1.8rem; padding: 10px; width: 70%; text-align: center; border: 2px solid #007bff; border-radius: 10px;" placeholder="Type here..." autocomplete="off">
+            <input type="text" id="spelling-input" 
+                   style="font-size: 1.8rem; padding: 12px; width: 80%; text-align: center; border: 3px solid #007bff; border-radius: 12px;" 
+                   placeholder="Type the missing word..." autocomplete="off">
         </div>
 
-        <div id="spelling-feedback" style="font-size: 1.5rem; margin: 15px 0; min-height: 1.6rem;"></div>
+        <!-- 反饋文字區域 -->
+        <div id="spelling-feedback" style="font-size: 1.5rem; margin: 15px 0; font-weight: bold; min-height: 2rem;"></div>
         
-        <button onclick="checkSpellingAnswer()" class="option-btn">Check</button>
-        <br>
-        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+            <button onclick="checkSpellingAnswer()" class="option-btn" style="background-color: #007bff; color: white; width: 200px;">Check</button>
+            <button onclick="showScreen('menu-screen')" class="back-btn" style="width: 200px;">Back to Menu</button>
+        </div>
     </div>
 </div>
-
+    
 <!-- Sentence Hero (Rearrange) 遊戲畫面 -->
 <div id="rearrange-screen" class="screen">
     <div class="game-container">
