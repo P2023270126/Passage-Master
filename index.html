@@ -24,12 +24,32 @@
             font-weight: bold;
         }
 
-        /* 1. 放大 Step 1 的回饋文字 */
-        #tm-marker-msg {
-            font-size: 1.5rem; 
-            margin: 20px 0;
-            line-height: 1.4;
+         /* 修正後的 Step 1 單字按鈕樣式 */
+        .word-btn {
+            font-size: 1.1rem;      /* 從 1.5rem 縮小到 1.1rem，讓字體更精緻 */
+            padding: 6px 12px;     /* 減少上下左右的間距 */
+            margin: 4px;           /* 讓按鈕之間的距離稍微靠攏 */
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;   /* 強制按鈕內的文字不要換行 */
         }
+
+.game-container {
+    max-width: 850px; /* 稍微加寬一點點，給句子更多伸展空間 */
+    /* ... 其他維持不變 ... */
+}
+        
+/* 確保容器有足夠寬度，不強行壓縮按鈕 */
+#tm-sentence-container {
+    display: flex;
+    flex-wrap: wrap;        /* 如果句子真的超級長，還是允許它換行，避免跑出螢幕 */
+    justify-content: center;
+    max-width: 95%;         /* 讓容器寬度更廣 */
+    margin: 20px auto;
+}
 
         /* 2. 按鈕美化 */
         #tm-continue-btn, #tm-next-btn, .back-btn {
