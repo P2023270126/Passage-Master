@@ -276,6 +276,61 @@ function loadTenseQuestion() {
     });
 }
 
+/**
+ * Tense Master - Step 1: 檢查使用者點擊的單字是否為時態標記 (Marker)
+ */
+function checkMarker(btn, word, correctAnswer) {
+    const msg = document.getElementById('tm-marker-msg');
+    const continueBtn = document.getElementById('tm-continue-btn');
+    
+    // 取得所有單字按鈕，點擊後禁用，防止重複點擊
+    const allWordBtns = document.querySelectorAll('.word-btn');
+    
+    // 簡單清理標點符號再比對
+    const cleanWord = word.toLowerCase().replace(/[?!.,]/g, '');
+    const cleanCorrect = correctAnswer.toLowerCase().trim();
+
+    if (cleanWord === cleanCorrect) {
+        // 答對了：按鈕變綠色，顯示正確訊息
+        btn.style.borderColor = '#28a745';
+        btn.style.backgroundColor = '#eaffea';
+        btn.style.color = '#28a745';
+        msg.innerHTML = '<b style="color:#28a745">✅ Correct! That\'s the tense marker.</b>';
+    } else {
+        // 答錯了：按鈕變紅色，提示正確答案
+        btn.style.borderColor = '#dc3545';
+        btn.style.backgroundColor = '#ffeaea';
+        btn.style.color = '#dc3545';
+        msg.innerHTML = `<b style="color:#dc3545">❌ Oops! The marker is "${correctAnswer}".</b>`;
+    }
+
+    // 無論對錯，都顯示「Continue ^_^」按鈕，讓 Jasper 進入 Step 2
+    continueBtn.style.display = 'inline-block';
+    
+    // 為了視覺效果，選完後讓其他按鈕稍微變淡
+    allWordBtns.forEach(b => {
+        b.disabled = true; // 鎖定按鈕
+        if (b !== btn) b.style.opacity = '0.5';
+    });
+}
+
+/**
+ * Tense Master - 從 Step 1 切換到 Step 2
+ */
+function goToStep2() {
+    const q = tmState.questions[tmState.currentQuestionIndex];
+    
+    // 1. 隱藏 Step 1 容器，顯示 Step 2 容器
+    document.getElementById('tm-step1-container').style.display = 'none';
+    document.getElementById('tm-step2-container').style.display = 'block';
+    
+    // 2. 在 Step 2 上方顯示 Step 1 的原句作為參考 (Context)
+    document.getElementById('tm-context-reference').innerText = `Question Context: ${q.context}`;
+    
+    // 3. 呼叫原本載入 Step 2 選擇題的函式
+    loadMCStep(q);
+}
+
 // 點擊 Continue 後觸發
 function goToStep2() {
     const q = tmState.questions[tmState.currentQuestionIndex];
