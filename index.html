@@ -10,315 +10,109 @@
 
 <!-- 2. 強效 CSS 修正區 -->
 <style>
+    /* ... 你原本其他的 CSS ... */
 
-        /* 1. 放大 Step 1 的回饋文字 (✅ Correct! / ❌ Oops!) */
-#tm-marker-msg {
-    font-size: 1.5rem; /* 放大為原始大小的 1.5 倍 */
-    margin: 20px 0;
-    line-height: 1.4;
-}
+    /* 1. 放大 Step 1 的回饋文字 */
+    #tm-marker-msg {
+        font-size: 1.5rem; 
+        margin: 20px 0;
+        line-height: 1.4;
+    }
 
-/* 2. 讓「Continue」和「Back to Menu」按鈕變大且更漂亮 */
-#tm-continue-btn, 
-button[onclick="showScreen('menu-screen')"] {
-    font-size: 1.25rem;      /* 字體放大 */
-    padding: 12px 24px;     /* 增加按鈕內距，讓它更好點擊 */
-    cursor: pointer;
-    background-color: #f8f9fa;
-    border: 1px solid #ccc;
-    border-radius: 8px;     /* 圓角 */
-    transition: all 0.2s;    /* 增加觸碰動畫 */
-    margin: 10px 5px;
-}
+    /* 2. 按鈕美化：Continue, Back, Next */
+    #tm-continue-btn, 
+    #tm-next-btn,
+    .back-btn {
+        font-size: 1.25rem;
+        padding: 12px 24px;
+        cursor: pointer;
+        background-color: #f8f9fa;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        transition: all 0.2s;
+        margin: 10px 5px;
+    }
 
-/* 按鈕滑鼠經過時的效果 */
-#tm-continue-btn:hover {
-    background-color: #e2e6ea;
-    transform: scale(1.05); /* 輕微放大效果 */
-}
+    #tm-next-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+    }
 
-/* 3. 針對 Step 2 的回饋與下一題按鈕也同步放大 */
-#tm-final-feedback {
-    font-size: 1.5rem; 
-    margin-top: 15px;
-}
+    #tm-continue-btn:hover, .back-btn:hover {
+        background-color: #e2e6ea;
+        transform: scale(1.05);
+    }
 
-#tm-next-btn {
-    font-size: 1.3rem;
-    padding: 15px 30px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 10px;
-}
-        
-        
-        /* 強制固定重組句子的顯示容器 */
-        .word-slots {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 12px !important;
-            justify-content: center !important;
-            align-content: flex-start !important;
-            
-            min-height: 150px !important; /* 稍微加高，確保空間充足 */
-            width: 100% !important;
-            max-width: 600px !important;
-            margin: 20px auto !important;
-            padding: 20px !important;
-            
-            background-color: #fcfcfc !important;
-            border: 2px dashed #aaaaaa !important; /* 稍微加深虛線顏色 */
-            border-radius: 15px !important; /* 圓角效果 */
-            box-sizing: border-box !important;
-        }
+    /* 3. Step 2 專用樣式 */
+    #tm-context-reference {
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 10px;
+        color: #666;
+        font-style: italic;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
 
-/* --- Tense Master 新增樣式 (插入於第 32 行) --- */
-        .word-box-container {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 10px !important;
-            justify-content: center !important;
-            margin: 20px 0 !important;
-        }
+    .option-btn {
+        font-size: 1.5rem; 
+        padding: 15px 30px;
+        margin: 10px;
+        border: 2px solid #007bff;
+        background-color: white;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-        .word-box {
-            padding: 10px 15px !important;
-            border: 2px solid #ccc !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            background: white !important;
-            font-size: 1.2rem !important;
-            font-weight: bold !important;
-            transition: all 0.2s !important;
-            position: relative !important;
-        }
+    .option-btn:hover {
+        background-color: #e7f3ff;
+        transform: translateY(-2px);
+    }
 
-        /* 綠色圓圈效果：正確的 Marker */
-        .word-box.correct-marker {
-            border-color: #28a745 !important;
-            background-color: #eaffea !important;
-            color: #28a745 !important;
-        }
-
-        .word-box.correct-marker::after {
-            content: '' !important;
-            position: absolute !important;
-            top: -5px !important;
-            left: -5px !important;
-            right: -5px !important;
-            bottom: -5px !important;
-            border: 3px solid #28a745 !important;
-            border-radius: 50% !important;
-            pointer-events: none !important;
-        }
-
-        /* 紅色叉叉效果：選錯的單字 */
-        .word-box.wrong-selection {
-            border-color: #dc3545 !important;
-            background-color: #ffeaea !important;
-            color: #dc3545 !important;
-        }
-
-        /* 答句顯示樣式 */
-        .sentence-display {
-            font-size: 1.3rem !important;
-            margin: 20px 0 !important;
-            color: #333 !important;
-            font-weight: 500 !important;
-        }
-
-        /* MC 選項按鈕樣式 */
-        .option-btn {
-            padding: 12px 20px !important;
-            font-size: 1.1rem !important;
-            border: 1px solid #ddd !important;
-            border-radius: 10px !important;
-            background-color: #fff !important;
-            cursor: pointer !important;
-            transition: background 0.3s !important;
-        }
-
-        .option-btn:hover {
-            background-color: #f0f0f0 !important;
-        }
-        
-        /* 點擊後出現在容器內的單字樣式 */
-        .selected-word {
-            display: inline-block !important;
-            background-color: #ffffff !important;
-            border: 1px solid #ddd !important;
-            padding: 8px 15px !important;
-            border-radius: 8px !important;
-            font-size: 1.2rem !important;
-            font-weight: bold !important;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-        }
-
-        /* 下方待選單字區域 */
-        .options-grid {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            justify-content: center !important;
-            gap: 10px !important;
-            margin-top: 20px !important;
-        }
-
-/* Step 2 的選項按鈕樣式 */
-.option-btn {
-    font-size: 1.5rem; /* 放大 150% */
-    padding: 15px 30px;
-    margin: 10px;
-    border: 2px solid #007bff;
-    background-color: white;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.option-btn:hover {
-    background-color: #e7f3ff;
-    transform: translateY(-2px);
-}
-
-/* 讓 Step 1 的參考句子稍微淡一點，區分層次 */
-#tm-context-reference {
-    border-bottom: 1px dashed #ccc;
-    padding-bottom: 10px;
-}
-
-    </style>
+    #tm-final-feedback {
+        font-size: 1.5rem;
+        margin: 15px 0;
+    }
+</style>
 </head>
 <body>
+    <!-- ... 其他螢幕內容 ... -->
 
-    <!-- 登入頁面 -->
-    <div id="login-screen" class="screen">
-        <h1>請選擇身份</h1>
-        <div class="login-container">
-            <button class="identity-btn" onclick="selectUser('66')">66 Jasper</button>
-            <button class="identity-btn" onclick="selectUser('22')">22 Jolie</button>
+    <div id="tense-master-screen" class="screen" style="display:none;">
+        <div class="game-container">
+            
+            <!-- Step 1 區域 -->
+            <div id="tm-step1-container">
+                <h2 style="font-size: 2rem;">Step 1: Click the Tense Marker</h2>
+                <div id="tm-sentence-container" class="word-box-container"></div>
+                <div id="tm-marker-msg"></div>
+                <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
+                <br>
+                <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+            </div>
+
+            <!-- Step 2 區域 (初始隱藏) -->
+            <div id="tm-step2-container" style="display:none;">
+                <h2 style="font-size: 2rem;">Step 2: Choose the Correct Verb Form</h2>
+                
+                <!-- 這裡會顯示 Step 1 的句子作為參考 -->
+                <div id="tm-context-reference"></div>
+                
+                <!-- 這裡會顯示 I ___ to the park... -->
+                <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin: 20px 0;"></div>
+                
+                <div id="tm-options-container"></div>
+                <div id="tm-final-feedback"></div>
+                
+                <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
+                <br>
+                <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+            </div>
+
         </div>
     </div>
 
-    <!-- 選單頁面 -->
-    <div id="menu-screen" class="screen" style="display:none;">
-        <h2 id="welcome-msg">Welcome</h2>
-        <div class="menu-grid">
-            <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
-            <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
-            <!-- 將 Proofread 改為 Tense Master，或者新增一個 -->
-            <button class="mode-btn" style="background-color: #e67e22;" onclick="startTenseMaster()">Tense Master (時態大師)</button>
-            <!-- [新增這個按鈕] -->
-            <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯與修正)</button>
-        </div>
-        <button onclick="logout()">切換身份</button>
-    </div>
-
-<!-- Spelling 畫面 -->
-<div id="spelling-screen" class="screen" style="display:none;">
-    <h2 id="spelling-title">Spelling Game</h2>
-    
-    <!-- [新增] Spelling 的類別選單 -->
-    <div class="filter-container" style="margin: 10px 0; text-align: center;">
-        <select id="spelling-category-filter" onchange="filterByCategory('Spelling')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
-            <option value="all">全部類別</option>
-        </select>
-    </div>
-
-    <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
-    <div id="spelling-word-display" style="min-height: 50px;"></div>
-    <div id="spelling-options" class="options-grid"></div>
-    
-    <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
-        <h3 id="feedback-text">✅ Correct!</h3>
-        <button onclick="nextSpellingQuestion()">下一題</button>
-    </div>
-    <hr>
-    <button onclick="showScreen('menu-screen')">返回選單</button>
-</div>
-
-<!-- Tense Master Screen -->
-<div id="tense-master-screen" class="screen" style="display:none;">
-    <!-- Step 1 容器 -->
-    <div id="tm-step1-container">
-        <h2 style="font-size: 2rem;">Step 1: Click the Tense Marker</h2>
-        <div id="tm-sentence-container"></div>
-        <div id="tm-marker-msg"></div> <!-- 放大的回饋文字 -->
-        <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
-        <br>
-        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-    </div>
-
-    <!-- Step 2 容器 (初始隱藏) -->
-    <div id="tm-step2-container" style="display:none;">
-        <h2 style="font-size: 2rem;">Step 2: Choose the Correct Verb Form</h2>
-        
-        <!-- 新增：用來重複顯示 Step 1 的原句 -->
-        <div id="tm-context-reference" style="font-size: 1.5rem; color: #555; margin-bottom: 20px; font-style: italic;"></div>
-        
-        <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin-bottom: 20px;"></div>
-        <div id="tm-options-container"></div>
-        <div id="tm-final-feedback"></div>
-        
-        <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
-        <br>
-        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-    </div>
-</div>
-    
-<!-- Rearrange 畫面 -->
-<div id="rearrange-screen" class="screen" style="display:none;">
-    <h2 id="rearrange-title">Sentence Rearrange</h2>
-    <p id="rearrange-hint" style="font-style: italic; color: #666;"></p>
-
-    <!-- [新增] Rearrange 的類別選單 -->
-    <div class="filter-container" style="margin: 10px 0; text-align: center;">
-        <select id="rearrange-category-filter" onchange="filterByCategory('Rearrange')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
-            <option value="all">全部類別</option>
-        </select>
-    </div>
-
-    <div id="rearrange-word-display" class="word-slots"></div>
-    
-    <div id="rearrange-undo-container" style="margin-bottom: 20px;">
-        <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
-    </div>
-
-    <div id="rearrange-options" class="options-grid"></div>
-
-    <div id="rearrange-feedback" style="display:none; margin-top: 20px; padding: 20px; border: 2px solid #28a745; border-radius: 10px;">
-        <h3 id="rearrange-feedback-text" style="color: #28a745;">✅ Excellent!</h3>
-        <div style="margin-bottom: 15px;">
-            <button id="listen-btn" class="mode-btn" style="background-color: #4A90E2;" onclick="speakSentence()">🔊 聽全文</button>
-        </div>
-        <button class="mode-btn" onclick="nextRearrangeQuestion()">下一題</button>
-    </div>
-    
-    <hr>
-    <button onclick="showScreen('menu-screen')">返回選單</button>
-</div>
-
-<div id="proofread-screen" class="screen" style="display:none;">
-    <h2>Proofread Mode</h2>
-    <div id="proofread-sentence-display" class="word-display"></div>
-
-    <!-- 這是第 260 行在找的 ID -->
-    <div id="correction-input-area" style="display:none; margin-top: 20px;">
-        <p>Selected: <span id="selected-wrong-word" style="font-weight:bold; color:red;"></span></p>
-        <!-- 這是第 266 行在找的 ID -->
-        <input type="text" id="user-correction" placeholder="Enter correction...">
-        <button onclick="checkCorrection()">Submit</button>
-    </div>
-
-    <!-- 這是第 261 行在找的 ID -->
-    <div id="proofread-feedback" style="display:none; margin-top: 20px;">
-        <p id="proofread-feedback-text"></p>
-        <button onclick="nextProofreadQuestion()">Next Question</button>
-    </div>
-
-    <hr>
-    <button onclick="showScreen('menu-screen')">Back to Menu</button>
-</div>
-    <script src="app.js"></script>
+    <!-- 記得把你在 <body> 裡面誤貼的中文解釋文字刪掉 -->
 </body>
 </html>
