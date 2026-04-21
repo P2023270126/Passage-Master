@@ -145,7 +145,7 @@ function switchToStep2(q) {
     
     // 題目變藍色粗體
     if (qLine) {
-        qLine.innerHTML = `<span style="color: #007bff; font-weight: bold; font-size: 1.25rem;">${q.context}</span>`;
+        qLine.innerHTML = `<span style="color: orange; font-weight: bold; font-size: 2.0rem;">${q.context}</span>`;
         qLine.style.borderBottom = "none";
     }
 
