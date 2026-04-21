@@ -4,213 +4,154 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Passage Master</title>
+    <!-- 1. 外部資源 -->
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
+    <!-- 2. 強效 CSS 修正區 -->
     <style>
-        /* 基礎樣式：確保螢幕切換正常 */
-        .screen { display: none; text-align: center; padding: 20px; }
-        .game-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-
-        /* Step 1 單字按鈕樣式 (重要：沒這段按鈕會很醜) */
-        .word-btn {
-            font-size: 1.5rem;
-            padding: 10px 20px;
-            margin: 5px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            font-weight: bold;
+        /* 強制固定重組句子的顯示容器 */
+        .word-slots {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 12px !important;
+            justify-content: center !important;
+            align-content: flex-start !important;
+            
+            min-height: 150px !important; /* 稍微加高，確保空間充足 */
+            width: 100% !important;
+            max-width: 600px !important;
+            margin: 20px auto !important;
+            padding: 20px !important;
+            
+            background-color: #fcfcfc !important;
+            border: 2px dashed #aaaaaa !important; /* 稍微加深虛線顏色 */
+            border-radius: 15px !important; /* 圓角效果 */
+            box-sizing: border-box !important;
         }
 
-         /* 修正後的 Step 1 單字按鈕樣式 */
-        .word-btn {
-            font-size: 1.1rem;      /* 從 1.5rem 縮小到 1.1rem，讓字體更精緻 */
-            padding: 6px 12px;     /* 減少上下左右的間距 */
-            margin: 4px;           /* 讓按鈕之間的距離稍微靠攏 */
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            font-weight: bold;
-            white-space: nowrap;   /* 強制按鈕內的文字不要換行 */
+        /* 點擊後出現在容器內的單字樣式 */
+        .selected-word {
+            display: inline-block !important;
+            background-color: #ffffff !important;
+            border: 1px solid #ddd !important;
+            padding: 8px 15px !important;
+            border-radius: 8px !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
         }
 
-.game-container {
-    max-width: 850px; /* 稍微加寬一點點，給句子更多伸展空間 */
-    /* ... 其他維持不變 ... */
-}
-        
-/* 確保容器有足夠寬度，不強行壓縮按鈕 */
-#tm-sentence-container {
-    display: flex;
-    flex-wrap: wrap;        /* 如果句子真的超級長，還是允許它換行，避免跑出螢幕 */
-    justify-content: center;
-    max-width: 95%;         /* 讓容器寬度更廣 */
-    margin: 20px auto;
-}
-
-        /* 2. 按鈕美化 */
-        #tm-continue-btn, #tm-next-btn, .back-btn {
-            font-size: 1.25rem;
-            padding: 12px 24px;
-            cursor: pointer;
-            background-color: #f8f9fa;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            transition: all 0.2s;
-            margin: 10px 5px;
+        /* 下方待選單字區域 */
+        .options-grid {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            margin-top: 20px !important;
         }
-
-        #tm-next-btn { background-color: #007bff; color: white; border: none; }
-        #tm-continue-btn:hover, .back-btn:hover { background-color: #e2e6ea; transform: scale(1.05); }
-
-        /* 3. Step 2 專用樣式 */
-        #tm-context-reference {
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 15px;
-            color: #666;
-            font-style: italic;
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-        }
-
-        .option-btn {
-            font-size: 1.5rem; 
-            padding: 15px 30px;
-            margin: 10px;
-            border: 2px solid #007bff;
-            background-color: white;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .option-btn:hover { background-color: #e7f3ff; transform: translateY(-2px); }
-        #tm-final-feedback { font-size: 1.5rem; margin: 15px 0; }
     </style>
 </head>
 <body>
 
-    <!-- 登入畫面 (確保這段存在，否則首頁是白的) -->
-    <div id="login-screen" class="screen" style="display: block;">
-        <div class="game-container">
-            <h1>English Passage Master</h1>
-            <p>Select your profile:</p>
-            <button class="option-btn" onclick="selectUser('66')">66 Jasper</button>
-            <button class="option-btn" onclick="selectUser('88')">88 Jolie</button>
+    <!-- 登入頁面 -->
+    <div id="login-screen" class="screen">
+        <h1>請選擇身份</h1>
+        <div class="login-container">
+            <button class="identity-btn" onclick="selectUser('66')">66 Jasper</button>
+            <button class="identity-btn" onclick="selectUser('22')">22 Jolie</button>
         </div>
     </div>
 
-<!-- 主選單畫面 -->
-<div id="menu-screen" class="screen">
-    <div class="game-container">
-        <h2 id="welcome-msg" style="font-size: 2.5rem; margin-bottom: 30px;">Welcome</h2>
-        
-<!-- 選單按鈕區域 -->
-    <div class="menu-grid" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
-        
-        <!-- 修正後的按鈕連結 -->
-        <button class="option-btn" style="width: 250px;" onclick="startSpellingGame()">Spelling Master</button>
-        <button class="option-btn" style="width: 250px;" onclick="startRearrangeGame()">Sentence Hero</button>
-        <button class="option-btn" style="width: 250px;" onclick="startProofreadingGame()">Proofreading</button>
-        <button class="option-btn" style="width: 250px;" onclick="startClozeGame()">Cloze Test</button>
-        
-        <button class="option-btn" style="width: 250px; border-color: #007bff; color: #007bff;" onclick="startTenseMaster()">
-            Tense Master
-        </button>
+    <!-- 選單頁面 -->
+    <div id="menu-screen" class="screen" style="display:none;">
+        <h2 id="welcome-msg">Welcome</h2>
+        <div class="menu-grid">
+            <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
+            <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
+            
+            <!-- [新增這個按鈕] -->
+            <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯與修正)</button>
+        </div>
+        <button onclick="logout()">切換身份</button>
+    </div>
+
+<!-- Spelling 畫面 -->
+<div id="spelling-screen" class="screen" style="display:none;">
+    <h2 id="spelling-title">Spelling Game</h2>
     
-        <hr style="width: 100%; margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-        
-        <button class="back-btn" onclick="showScreen('login-screen')">Switch User</button>
+    <!-- [新增] Spelling 的類別選單 -->
+    <div class="filter-container" style="margin: 10px 0; text-align: center;">
+        <select id="spelling-category-filter" onchange="filterByCategory('Spelling')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
+            <option value="all">全部類別</option>
+        </select>
     </div>
-    </div>
-</div>
 
-<!-- Tense Master 遊戲畫面 -->
-<div id="tense-master-screen" class="screen" style="display:none;">
-    <div class="game-container">
-        
-        <!-- Step 1 區域：選時態標記 -->
-        <div id="tm-step1-container">
-            <h2 style="font-size: 2rem; color: #333;">Step 1: Click the Tense Marker</h2>
-            <!-- 單字按鈕會產生在這裡 -->
-            <div id="tm-sentence-container" style="display: flex; flex-wrap: wrap; justify-content: center; margin: 25px 0; gap: 10px;"></div>
-            
-            <div id="tm-marker-msg"></div> <!-- 放大回饋文字 -->
-            
-            <button id="tm-continue-btn" style="display:none;" onclick="goToStep2()">Continue ^_^</button>
-            <br>
-            <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-        </div>
-
-        <!-- Step 2 區域：選正確動詞 (初始隱藏) -->
-        <div id="tm-step2-container" style="display:none;">
-                <h2 style="font-size: 2rem; color: #333;">Step 2: Choose the Correct Verb Form</h2>
-            
-        <!-- 這裡會由 JS 動態填入深綠色的大字句子 -->
-            <div id="tm-context-reference"></div>
-            
-            <!-- 填充題句子 -->
-            <div id="tm-cloze-sentence" style="font-size: 1.8rem; margin: 25px 0; font-weight: bold;"></div>
-            
-            <!-- 三個選項按鈕會產生在這裡 -->
-            <div id="tm-options-container" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;"></div>
-            
-            <div id="tm-final-feedback"></div>
-            
-            <button id="tm-next-btn" style="display:none;" onclick="nextTenseQuestion()">Next Question</button>
-            <br>
-            <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
-        </div>
-
-    </div>
-</div>
-
-<!-- Spelling Master 遊戲畫面 -->
-<div id="spelling-screen" class="screen">
-    <div class="game-container">
-        <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Spelling Master</h2>
-        
-        <div id="spelling-image-container" style="display: block; min-height: 10px;"></div>
-        
-        <!-- 顯示題目句子 -->
-        <div id="spelling-sentence" style="font-size: 1.8rem; margin: 25px 0; font-weight: bold; line-height: 1.6;"></div>
-        
-        <div style="margin: 20px 0;">
-            <input type="text" id="spelling-input" 
-                   style="font-size: 1.8rem; padding: 12px; width: 80%; text-align: center; border: 3px solid #007bff; border-radius: 12px;" 
-                   placeholder="Type the missing word..." autocomplete="off">
-        </div>
-
-        <!-- 🚀 請在這裡插入這行：字母按鈕容器 -->
-        <div id="spelling-options" style="margin: 20px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
-
-        <!-- 反饋文字區域 -->
-        <div id="spelling-feedback" style="font-size: 1.5rem; margin: 15px 0; font-weight: bold; min-height: 2rem;"></div>
-        
-        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
-            <button onclick="checkSpellingAnswer()" class="option-btn" style="background-color: #007bff; color: white; width: 200px;">Check</button>
-            <button onclick="showScreen('menu-screen')" class="back-btn" style="width: 200px;">Back to Menu</button>
-        </div>
-    </div>
-</div>
+    <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
+    <div id="spelling-word-display" style="min-height: 50px;"></div>
+    <div id="spelling-options" class="options-grid"></div>
     
-<!-- Sentence Hero (Rearrange) 遊戲畫面 -->
-<div id="rearrange-screen" class="screen">
-    <div class="game-container">
-        <h2 style="font-size: 2rem;">Sentence Hero</h2>
-        <div id="rearrange-words-container" style="margin: 25px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"></div>
-        <div id="rearrange-answer-container" style="min-height: 60px; border: 2px dashed #007bff; padding: 15px; margin-bottom: 25px; border-radius: 10px; background: #f8f9fa;"></div>
-        <div id="rearrange-feedback" style="font-size: 1.5rem;"></div>
-        <br>
-        <button onclick="checkRearrangeAnswer()" class="option-btn">Submit Answer</button>
-        <button onclick="resetRearrange()" class="back-btn">Reset</button>
-        <br>
-        <button onclick="showScreen('menu-screen')" class="back-btn">Back to Menu</button>
+    <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
+        <h3 id="feedback-text">✅ Correct!</h3>
+        <button onclick="nextSpellingQuestion()">下一題</button>
     </div>
-</div>    
+    <hr>
+    <button onclick="showScreen('menu-screen')">返回選單</button>
+</div>
+
+<!-- Rearrange 畫面 -->
+<div id="rearrange-screen" class="screen" style="display:none;">
+    <h2 id="rearrange-title">Sentence Rearrange</h2>
+    <p id="rearrange-hint" style="font-style: italic; color: #666;"></p>
+
+    <!-- [新增] Rearrange 的類別選單 -->
+    <div class="filter-container" style="margin: 10px 0; text-align: center;">
+        <select id="rearrange-category-filter" onchange="filterByCategory('Rearrange')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
+            <option value="all">全部類別</option>
+        </select>
+    </div>
+
+    <div id="rearrange-word-display" class="word-slots"></div>
+    
+    <div id="rearrange-undo-container" style="margin-bottom: 20px;">
+        <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
+    </div>
+
+    <div id="rearrange-options" class="options-grid"></div>
+
+    <div id="rearrange-feedback" style="display:none; margin-top: 20px; padding: 20px; border: 2px solid #28a745; border-radius: 10px;">
+        <h3 id="rearrange-feedback-text" style="color: #28a745;">✅ Excellent!</h3>
+        <div style="margin-bottom: 15px;">
+            <button id="listen-btn" class="mode-btn" style="background-color: #4A90E2;" onclick="speakSentence()">🔊 聽全文</button>
+        </div>
+        <button class="mode-btn" onclick="nextRearrangeQuestion()">下一題</button>
+    </div>
+    
+    <hr>
+    <button onclick="showScreen('menu-screen')">返回選單</button>
+</div>
+
+<div id="proofread-screen" class="screen" style="display:none;">
+    <h2>Proofread Mode</h2>
+    <div id="proofread-sentence-display" class="word-display"></div>
+
+    <!-- 這是第 260 行在找的 ID -->
+    <div id="correction-input-area" style="display:none; margin-top: 20px;">
+        <p>Selected: <span id="selected-wrong-word" style="font-weight:bold; color:red;"></span></p>
+        <!-- 這是第 266 行在找的 ID -->
+        <input type="text" id="user-correction" placeholder="Enter correction...">
+        <button onclick="checkCorrection()">Submit</button>
+    </div>
+
+    <!-- 這是第 261 行在找的 ID -->
+    <div id="proofread-feedback" style="display:none; margin-top: 20px;">
+        <p id="proofread-feedback-text"></p>
+        <button onclick="nextProofreadQuestion()">Next Question</button>
+    </div>
+
+    <hr>
+    <button onclick="showScreen('menu-screen')">Back to Menu</button>
+</div>
     <script src="app.js"></script>
 </body>
 </html>
