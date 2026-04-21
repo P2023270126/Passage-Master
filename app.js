@@ -1,6 +1,7 @@
 /**
- * app.js - 2026 最終整合版 (昨晚穩定版 + Tense Master)
+ * app.js - 2026 最終整合版 (修正語法錯誤版)
  */
+
 // 1. 設定區
 const CSV_CONFIG = {
     "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv", 
@@ -17,12 +18,16 @@ let rearrangeState = { currentQuestionIndex: 0, correctCount: 0, questions: [], 
 let proofreadState = { currentQuestionIndex: 0, correctCount: 0, questions: [], targetWord: "", correctAnswer: "" };
 let tmState = { currentQuestionIndex: 0, correctCount: 0, questions: [], selectedMarker: false };
 
-// 確保 Function 名稱同 HTML 裡面 onclick 寫的一模一樣
-function selectUser(userName) {
-    console.log("Selected user:", userName);
-    // 這裡通常是儲存使用者名稱並隱藏登入畫面
-    currentUser = userName; 
-    showScreen('menu-screen'); // 或者是跳轉到主選單的 Function
+// --- 基礎功能 ---
+function selectUser(userId) {
+    currentUser = userId;
+    const url = CSV_CONFIG[userId];
+    if (url) {
+        // 更新歡迎詞 (假設 HTML 有這個 ID)
+        const welcomeMsg = document.getElementById('welcome-msg');
+        if(welcomeMsg) welcomeMsg.innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
+        fetchData(url);
+    }
 }
 
 function fetchData(url) {
@@ -42,20 +47,15 @@ function processGameData(rawData) {
         if (row.Mode) {
             const mode = row.Mode.trim();
             if (gameData[mode]) {
-                // 通用的資料處理
                 const item = {
                     category: row.Category,
                     context: row.Context,
-                    // 為了相容 Spelling，我們保留 answer 屬性
                     answer: row.Answer || row.Correction, 
-                    
-                    // 專屬 Tense Master 的屬性
                     marker: row.Answer,          // Column D
                     fullSentence: row.Correction, // Column E
                     verbOptions: row.Marker,      // Column F
                     finalAnswer: row.Correct_Verb // Column G
                 };
-                
                 gameData[mode].push(item);
             }
         }
@@ -69,7 +69,7 @@ function showScreen(screenId) {
 
 function logout() { location.reload(); }
 
-// --- Tense Master 邏輯 (新加入) ---
+// --- Tense Master 邏輯 ---
 function startTenseMaster() {
     const questions = gameData.TenseMaster || [];
     if (questions.length === 0) return alert("No Tense Master data!");
@@ -82,19 +82,15 @@ function startTenseMaster() {
 
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
-    const questionLine = document.getElementById('tm-question-line'); // 注意：你 HTML 仲未有呢個 ID，請睇下面補充
-    const fillLine = document.getElementById('tm-fill-blank-line');
+    const sentenceCont = document.getElementById('tm-sentence-container');
     const feedback = document.getElementById('tm-feedback');
     
-    // 初始化
     feedback.innerText = "";
     tmState.selectedMarker = false;
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
     
-    // 顯示 Step 1 題目句子 (Column C)
-    // 我們需要一個地方放 Step 1 的單字點擊，建議將 tm-sentence-container 清空再放入
-    const sentenceCont = document.getElementById('tm-sentence-container');
+    // 建立結構
     sentenceCont.innerHTML = `
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
         <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc; margin-top: 15px;">${q.fullSentence}</div>
@@ -115,6 +111,7 @@ function loadTenseQuestion() {
             if (cleanWord === targetMarker) {
                 span.classList.add('selected');
                 feedback.innerText = "🎯 Well found!";
+                feedback.style.color = "green";
             } else {
                 span.style.color = "orange";
                 feedback.innerText = `💡 Note: "${q.marker}" is the marker.`;
@@ -122,7 +119,7 @@ function loadTenseQuestion() {
             
             setTimeout(() => {
                 showTmOptions(q);
-                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; // 點亮句子
+                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; 
             }, 800);
         };
         qLine.appendChild(span);
@@ -132,9 +129,11 @@ function loadTenseQuestion() {
 function showTmOptions(q) {
     const optionsCont = document.getElementById('tm-options');
     const feedback = document.getElementById('tm-feedback');
+    const instruction = document.getElementById('tm-instruction');
+    
     optionsCont.innerHTML = "";
     document.getElementById('tm-step2-area').style.display = "block";
-    document.getElementById('tm-instruction').innerText = "Step 2: Select the correct Verb Form";
+    if(instruction) instruction.innerText = "Step 2: Choose the Correct Verb";
 
     const opts = (q.verbOptions || "").split('|').map(s => s.trim());
     
@@ -147,12 +146,10 @@ function showTmOptions(q) {
                 feedback.innerText = "✅ Perfect! Listen to the sentence.";
                 feedback.style.color = "green";
                 
-               // 在 showTmOptions 的 if (opt === q.finalAnswer) 區塊內加入：
                 const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
                 document.getElementById('tm-fill-blank-line').innerText = finalSentence;
                 speak(finalSentence);
-                // 將網頁上的底線句子換成正確的完整句子
-                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
+                
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
                 optionsCont.style.pointerEvents = "none";
@@ -160,41 +157,6 @@ function showTmOptions(q) {
                 feedback.innerText = "❌ Try another form!";
                 feedback.style.color = "red";
             }
-        };
-        optionsCont.appendChild(btn);
-    });
-}
-    optionsCont.style.pointerEvents = "auto";
-}
-
-function showTmOptions(q) {
-    const optionsCont = document.getElementById('tm-options');
-    optionsCont.innerHTML = "";
-    document.getElementById('tm-step2-area').style.display = "block";
-    document.getElementById('tm-instruction').innerText = "Step 2: Choose the Correct Verb";
-
-    // 關鍵修正：用返你在 processGameData 定義嘅名 (假設係 verbOptions)
-    // 並且用 "|" 嚟 split，因為你 Sheet 入面係用 "|"
-    const rawOptions = q.verbOptions || ""; 
-    const opts = rawOptions.split('|').map(s => s.trim());
-
-    opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = "letter-btn";
-        btn.innerText = opt;
-        btn.onclick = () => {
-            const feedback = document.getElementById('tm-feedback');
-            // 關鍵修正：對比 finalAnswer (即係 Sheet 嘅 G 欄)
-            if (opt === q.finalAnswer) {
-                feedback.innerText = "✅ Perfect! Correct Tense!";
-                feedback.style.color = "green";
-                tmState.correctCount++;
-            } else {
-                feedback.innerText = `❌ Wrong. The answer is "${q.finalAnswer}"`;
-                feedback.style.color = "red";
-            }
-            document.getElementById('tm-next-btn').style.display = "block";
-            optionsCont.style.pointerEvents = "none";
         };
         optionsCont.appendChild(btn);
     });
@@ -211,6 +173,18 @@ function nextTenseQuestion() {
     }
 }
 
+// --- 公用功能 ---
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+    }
+}
+
+// ... (這裡接你原本的 startSpellingGame, startRearrangeGame, startProofreadGame 等函數)
 // --- 以下保留你原本所有穩定的邏輯 (Spelling, Rearrange, Proofread) ---
 
 function startSpellingGame() {
