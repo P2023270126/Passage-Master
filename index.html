@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Passage Master</title>
-    <!-- 1. 外部資源 -->
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
-    <!-- 2. 強效 CSS 修正區 -->
     <style>
         /* 強制固定重組句子的顯示容器 */
         .word-slots {
@@ -17,20 +15,17 @@
             gap: 12px !important;
             justify-content: center !important;
             align-content: flex-start !important;
-            
-            min-height: 150px !important; /* 稍微加高，確保空間充足 */
+            min-height: 150px !important;
             width: 100% !important;
             max-width: 600px !important;
             margin: 20px auto !important;
             padding: 20px !important;
-            
             background-color: #fcfcfc !important;
-            border: 2px dashed #aaaaaa !important; /* 稍微加深虛線顏色 */
-            border-radius: 15px !important; /* 圓角效果 */
+            border: 2px dashed #aaaaaa !important;
+            border-radius: 15px !important;
             box-sizing: border-box !important;
         }
 
-        /* 點擊後出現在容器內的單字樣式 */
         .selected-word {
             display: inline-block !important;
             background-color: #ffffff !important;
@@ -42,7 +37,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
         }
 
-        /* 下方待選單字區域 */
         .options-grid {
             display: flex !important;
             flex-wrap: wrap !important;
@@ -50,11 +44,20 @@
             gap: 10px !important;
             margin-top: 20px !important;
         }
+        
+        /* Tense Master 專用樣式 */
+        .tm-marker {
+            cursor: pointer;
+            padding: 2px 5px;
+            border-bottom: 2px solid #3498db;
+            transition: background 0.3s;
+        }
+        .tm-marker:hover { background-color: #ebf5fb; }
+        .tm-marker.selected { background-color: #f1c40f; border-bottom: 2px solid #e67e22; }
     </style>
 </head>
 <body>
 
-    <!-- 登入頁面 -->
     <div id="login-screen" class="screen">
         <h1>請選擇身份</h1>
         <div class="login-container">
@@ -63,95 +66,89 @@
         </div>
     </div>
 
-    <!-- 選單頁面 -->
     <div id="menu-screen" class="screen" style="display:none;">
         <h2 id="welcome-msg">Welcome</h2>
         <div class="menu-grid">
-            <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字練習)</button>
-            <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組句子)</button>
-            
-            <!-- [新增這個按鈕] -->
-            <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯與修正)</button>
+            <button class="mode-btn" onclick="startSpellingGame()">Spelling (拼字)</button>
+            <button class="mode-btn" onclick="startRearrangeGame()">Rearrange (重組)</button>
+            <button class="mode-btn" style="background-color: #9b59b6;" onclick="startProofreadGame()">Proofread (辨錯)</button>
+            <!-- 新增 Tense Master 按鈕 -->
+            <button class="mode-btn" style="background-color: #e67e22;" onclick="startTenseMaster()">Tense Master (時態)</button>
         </div>
         <button onclick="logout()">切換身份</button>
     </div>
 
-<!-- Spelling 畫面 -->
-<div id="spelling-screen" class="screen" style="display:none;">
-    <h2 id="spelling-title">Spelling Game</h2>
-    
-    <!-- [新增] Spelling 的類別選單 -->
-    <div class="filter-container" style="margin: 10px 0; text-align: center;">
-        <select id="spelling-category-filter" onchange="filterByCategory('Spelling')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
-            <option value="all">全部類別</option>
-        </select>
-    </div>
-
-    <p id="spelling-sentence" style="font-size: 1.2rem; margin: 20px;"></p>
-    <div id="spelling-word-display" style="min-height: 50px;"></div>
-    <div id="spelling-options" class="options-grid"></div>
-    
-    <div id="spelling-feedback" style="display:none; border: 2px solid #28a745; padding: 20px; border-radius: 10px;">
-        <h3 id="feedback-text">✅ Correct!</h3>
-        <button onclick="nextSpellingQuestion()">下一題</button>
-    </div>
-    <hr>
-    <button onclick="showScreen('menu-screen')">返回選單</button>
-</div>
-
-<!-- Rearrange 畫面 -->
-<div id="rearrange-screen" class="screen" style="display:none;">
-    <h2 id="rearrange-title">Sentence Rearrange</h2>
-    <p id="rearrange-hint" style="font-style: italic; color: #666;"></p>
-
-    <!-- [新增] Rearrange 的類別選單 -->
-    <div class="filter-container" style="margin: 10px 0; text-align: center;">
-        <select id="rearrange-category-filter" onchange="filterByCategory('Rearrange')" style="padding: 8px; border-radius: 5px; font-size: 1rem;">
-            <option value="all">全部類別</option>
-        </select>
-    </div>
-
-    <div id="rearrange-word-display" class="word-slots"></div>
-    
-    <div id="rearrange-undo-container" style="margin-bottom: 20px;">
-        <button class="mode-btn" style="background-color: #f0ad4e;" onclick="undoLastWord()">↩ 退回一步</button>
-    </div>
-
-    <div id="rearrange-options" class="options-grid"></div>
-
-    <div id="rearrange-feedback" style="display:none; margin-top: 20px; padding: 20px; border: 2px solid #28a745; border-radius: 10px;">
-        <h3 id="rearrange-feedback-text" style="color: #28a745;">✅ Excellent!</h3>
-        <div style="margin-bottom: 15px;">
-            <button id="listen-btn" class="mode-btn" style="background-color: #4A90E2;" onclick="speakSentence()">🔊 聽全文</button>
+    <!-- Spelling -->
+    <div id="spelling-screen" class="screen" style="display:none;">
+        <h2 id="spelling-title">Spelling Game</h2>
+        <div class="filter-container">
+            <select id="spelling-category-filter" onchange="filterByCategory('Spelling')">
+                <option value="all">全部類別</option>
+            </select>
         </div>
-        <button class="mode-btn" onclick="nextRearrangeQuestion()">下一題</button>
-    </div>
-    
-    <hr>
-    <button onclick="showScreen('menu-screen')">返回選單</button>
-</div>
-
-<div id="proofread-screen" class="screen" style="display:none;">
-    <h2>Proofread Mode</h2>
-    <div id="proofread-sentence-display" class="word-display"></div>
-
-    <!-- 這是第 260 行在找的 ID -->
-    <div id="correction-input-area" style="display:none; margin-top: 20px;">
-        <p>Selected: <span id="selected-wrong-word" style="font-weight:bold; color:red;"></span></p>
-        <!-- 這是第 266 行在找的 ID -->
-        <input type="text" id="user-correction" placeholder="Enter correction...">
-        <button onclick="checkCorrection()">Submit</button>
+        <p id="spelling-sentence"></p>
+        <div id="spelling-word-display" style="min-height: 50px;"></div>
+        <div id="spelling-options" class="options-grid"></div>
+        <div id="spelling-feedback" style="display:none;">
+            <h3 id="feedback-text"></h3>
+            <button onclick="nextSpellingQuestion()">下一題</button>
+        </div>
+        <hr><button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
 
-    <!-- 這是第 261 行在找的 ID -->
-    <div id="proofread-feedback" style="display:none; margin-top: 20px;">
-        <p id="proofread-feedback-text"></p>
-        <button onclick="nextProofreadQuestion()">Next Question</button>
+    <!-- Rearrange -->
+    <div id="rearrange-screen" class="screen" style="display:none;">
+        <h2 id="rearrange-title">Sentence Rearrange</h2>
+        <div class="filter-container">
+            <select id="rearrange-category-filter" onchange="filterByCategory('Rearrange')">
+                <option value="all">全部類別</option>
+            </select>
+        </div>
+        <div id="rearrange-word-display" class="word-slots"></div>
+        <div id="rearrange-undo-container"><button onclick="undoLastWord()">↩ 退回</button></div>
+        <div id="rearrange-options" class="options-grid"></div>
+        <div id="rearrange-feedback" style="display:none;">
+            <h3 id="rearrange-feedback-text"></h3>
+            <button onclick="speakSentence()">🔊 聽全文</button>
+            <button onclick="nextRearrangeQuestion()">下一題</button>
+        </div>
+        <hr><button onclick="showScreen('menu-screen')">返回選單</button>
     </div>
 
-    <hr>
-    <button onclick="showScreen('menu-screen')">Back to Menu</button>
-</div>
+    <!-- Proofread -->
+    <div id="proofread-screen" class="screen" style="display:none;">
+        <h2>Proofread Mode</h2>
+        <div id="proofread-sentence-display"></div>
+        <div id="correction-input-area" style="display:none;">
+            <p>Selected: <span id="selected-wrong-word" style="color:red;"></span></p>
+            <input type="text" id="user-correction">
+            <button onclick="checkCorrection()">Submit</button>
+        </div>
+        <div id="proofread-feedback" style="display:none;">
+            <p id="proofread-feedback-text"></p>
+            <button onclick="nextProofreadQuestion()">Next</button>
+        </div>
+        <hr><button onclick="showScreen('menu-screen')">Back</button>
+    </div>
+
+    <!-- Tense Master (新畫面) -->
+    <div id="tense-master-screen" class="screen" style="display:none;">
+        <h2>Tense Master</h2>
+        <div class="game-container">
+            <h3 id="tm-instruction">Step 1: Click the Time Marker (時態提示詞)</h3>
+            <div id="tm-sentence-container" style="font-size: 1.5rem; line-height: 2; margin: 30px 0;"></div>
+            
+            <div id="tm-step2-area" style="display:none; border-top: 2px solid #eee; padding-top: 20px;">
+                <p>Step 2: Select the correct Verb Form</p>
+                <div id="tm-options" class="options-grid"></div>
+            </div>
+
+            <div id="tm-feedback" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem;"></div>
+            <button id="tm-next-btn" onclick="nextTenseQuestion()" style="display:none; margin-top:20px;">Next Question</button>
+        </div>
+        <hr><button onclick="showScreen('menu-screen')">Back to Menu</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
