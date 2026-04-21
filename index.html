@@ -83,16 +83,32 @@
         </div>
     </div>
 
-    <!-- 主選單畫面 -->
-    <div id="menu-screen" class="screen">
-        <div class="game-container">
-            <h2 id="welcome-msg">Welcome</h2>
-            <div class="menu-grid">
-                <button class="option-btn" onclick="startTenseMaster()">Tense Master</button>
-                <!-- 其他按鈕... -->
-            </div>
+<!-- 主選單畫面 -->
+<div id="menu-screen" class="screen">
+    <div class="game-container">
+        <h2 id="welcome-msg" style="font-size: 2.5rem; margin-bottom: 30px;">Welcome</h2>
+        
+        <!-- 選單按鈕區域 -->
+        <div class="menu-grid" style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            
+            <!-- 確保 Tense Master 以外的按鈕也都在這裡 -->
+            <button class="option-btn" style="width: 250px;" onclick="startSpelling()">Spelling Master</button>
+            <button class="option-btn" style="width: 250px;" onclick="startRearrange()">Sentence Hero</button>
+            <button class="option-btn" style="width: 250px;" onclick="startProofread()">Proofreading</button>
+            <button class="option-btn" style="width: 250px;" onclick="startCloze()">Cloze Test</button>
+            
+            <!-- 你目前正在優化的 Tense Master -->
+            <button class="option-btn" style="width: 250px; border-color: #007bff; color: #007bff;" onclick="startTenseMaster()">
+                Tense Master
+            </button>
+
+            <hr style="width: 100%; margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <!-- 返回登入頁 -->
+            <button class="back-btn" onclick="showScreen('login-screen')">Switch User</button>
         </div>
     </div>
+</div>
 
     <!-- Tense Master 遊戲畫面 -->
     <div id="tense-master-screen" class="screen">
