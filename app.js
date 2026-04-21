@@ -47,10 +47,11 @@ function processGameData(rawData) {
             if (gameData[mode]) {
                 gameData[mode].push({
                     category: row.Category,
-                    context: row.Context,
-                    answer: row.Answer,
-                    correction: row.Correction || row.correction,
-                    marker: row.Marker // Tense Master 專用
+                    context: row.Context,        // Column C: 題目句子
+                    marker: row.Answer,         // Column D: 要點擊嘅提示詞
+                    fullSentence: row.Correction, // Column E: 填空句子
+                    verbOptions: row.Marker,     // Column F: go|went|goes
+                    finalAnswer: row.Correct_Verb // Column G: 正確答案
                 });
             }
         }
@@ -79,41 +80,63 @@ function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const container = document.getElementById('tm-sentence-container');
     const feedback = document.getElementById('tm-feedback');
-    const step2 = document.getElementById('tm-step2-area');
     
-    container.innerHTML = "";
-    feedback.innerText = "";
-    step2.style.display = "none";
-    tmState.selectedMarker = false;
-    document.getElementById('tm-next-btn').style.display = "none";
-    document.getElementById('tm-instruction').innerText = "Step 1: Click the Time Marker (時態提示詞)";
+    // 顯示兩行：第一行係題目(搵 Marker)，第二行係填空句
+    container.innerHTML = `
+        <div style="font-size: 1rem; color: #666; margin-bottom: 10px;">Find the marker in this sentence:</div>
+        <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
+        <div id="tm-fill-blank-line" style="font-weight: bold; color: #2c3e50;">${q.fullSentence}</div>
+    `;
 
-    // --- 安全檢查：如果 Marker 冇填，就預設做空字串，防止 toLowerCase() 報錯 ---
-    const correctMarker = (q.marker || "").trim().toLowerCase();
+    const questionLine = document.getElementById('tm-question-line');
+    const targetMarker = (q.marker || "").trim().toLowerCase();
 
-    const words = q.context.split(' ');
-    words.forEach(word => {
+    // 處理 Column C 嘅題目，等 Jasper 點擊 Marker
+    q.context.split(' ').forEach(word => {
         const cleanWord = word.replace(/[.,!?;:]/g, "").trim().toLowerCase();
         const span = document.createElement('span');
         span.innerText = word + " ";
         span.className = "tm-marker";
-        
         span.onclick = () => {
             if (tmState.selectedMarker) return;
-            
-            // 如果點中咗正確嘅 Marker
-            if (correctMarker !== "" && cleanWord === correctMarker) {
+            if (cleanWord === targetMarker) {
                 span.classList.add('selected');
                 tmState.selectedMarker = true;
-                feedback.innerText = "🎯 Marker Found! Now choose the verb form.";
+                feedback.innerText = "🎯 Found it! Now choose the verb.";
                 feedback.style.color = "blue";
                 showTmOptions(q);
             } else {
-                feedback.innerText = "❌ Not the marker, try again!";
+                feedback.innerText = "❌ Not this one!";
                 feedback.style.color = "red";
             }
         };
-        container.appendChild(span);
+        questionLine.appendChild(span);
+    });
+}
+
+function showTmOptions(q) {
+    const optionsCont = document.getElementById('tm-options');
+    optionsCont.innerHTML = "";
+    document.getElementById('tm-step2-area').style.display = "block";
+
+    // 根據 Column F 嘅 "|" 嚟拆開按鈕
+    const opts = q.verbOptions.split('|').map(s => s.trim());
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "letter-btn";
+        btn.innerText = opt;
+        btn.onclick = () => {
+            if (opt === q.finalAnswer) { // 對比 Column G
+                document.getElementById('tm-feedback').innerText = "✅ Correct! Well done!";
+                document.getElementById('tm-feedback').style.color = "green";
+                tmState.correctCount++;
+                document.getElementById('tm-next-btn').style.display = "block";
+            } else {
+                document.getElementById('tm-feedback').innerText = "❌ Wrong! Try again.";
+                document.getElementById('tm-feedback').style.color = "red";
+            }
+        };
+        optionsCont.appendChild(btn);
     });
 }
 
