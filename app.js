@@ -74,21 +74,39 @@ function fetchData(url) {
 }
 
 function processGameData(rawData) {
-    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
+    // 1. 初始化所有遊戲模式的容器，包含新的 TenseMaster
+    gameData = { 
+        Spelling: [], 
+        Rearrange: [], 
+        Proofread: [], 
+        Cloze: [], 
+        TenseMaster: [] 
+    };
+
     rawData.forEach(row => {
         if (row.Mode) {
             const mode = row.Mode.trim();
+            
+            // 2. 檢查該模式是否存在於我們的 gameData 結構中
             if (gameData[mode]) {
                 gameData[mode].push({
                     category: row.Category,
                     context: row.Context,
                     answer: row.Answer,
-                    // 確保這裡的鍵名 (Key) 跟 Google Sheet 表頭完全一樣
-                    correction: row.Correction || row.correction 
+                    // 修正建議
+                    correction: row.Correction || row.correction,
+                    
+                    // --- [針對 Tense Master 新增的欄位] ---
+                    // Options 欄位用來放 MC 選擇題的選項 (例如: goes|went|gone)
+                    options: row.Options || row.options || "",
+                    
+                    // Correct_Verb 欄位放正確的動詞形式 (例如: went)
+                    correct_verb: row.Correct_Verb || row.correct_verb || ""
                 });
             }
         }
     });
+    console.log("Game Data Processed:", gameData); // 除錯用，可看資料有沒有抓對
 }
 
 function showScreen(screenId) {
@@ -200,6 +218,146 @@ function startRearrangeGame() {
     rearrangeState.correctCount = 0;
     showScreen('rearrange-screen');
     loadRearrangeQuestion();
+}
+
+/**
+ * Tense Master 模式邏輯
+ */
+function startTenseMaster() {
+    // 從 gameData 中過濾出 TenseMaster 模式的題目
+    // 注意：確保你在 Google Sheet 的 Mode 欄位寫的是 TenseMaster
+    const questions = gameData.TenseMaster || []; 
+    
+    if (questions.length === 0) {
+        return alert("找不到 Tense Master 題目！請檢查 Google Sheet 的 Mode 欄位。");
+    }
+
+    tmState.questions = [...questions];
+    tmState.currentQuestionIndex = 0;
+    tmState.correctCount = 0;
+    
+    showScreen('tense-master-screen');
+    loadTenseQuestion();
+}
+
+function loadTenseQuestion() {
+    const q = tmState.questions[tmState.currentQuestionIndex];
+    const container = document.getElementById('tm-question-display');
+    const step1Feedback = document.getElementById('tm-step1-feedback');
+    const step2Area = document.getElementById('tm-step2-area');
+    
+    // 重置介面
+    container.innerHTML = '';
+    step1Feedback.style.display = 'none';
+    step2Area.style.display = 'none';
+    document.getElementById('tm-next-btn').style.display = 'none';
+    document.getElementById('tm-final-feedback').innerText = '';
+
+    // Step 1: 顯示問句並拆解成單字方塊
+    const words = q.context.split(' '); // Google Sheet 中的問句放在 Context 欄位
+    words.forEach(word => {
+        const box = document.createElement('div');
+        box.className = 'word-box';
+        box.innerText = word;
+        box.onclick = () => handleMarkerClick(box, word, q.answer); // Marker 放在 Answer 欄位
+        container.appendChild(box);
+    });
+}
+
+function handleMarkerClick(element, clickedWord, correctMarker) {
+    const cleanClicked = clickedWord.replace(/[?!.,]/g, "").toLowerCase();
+    const cleanTarget = correctMarker.replace(/[?!.,]/g, "").toLowerCase();
+    
+    const allBoxes = document.querySelectorAll('.word-box');
+    let targetBox = null;
+
+    allBoxes.forEach(box => {
+        if (box.innerText.replace(/[?!.,]/g, "").toLowerCase() === cleanTarget) targetBox = box;
+        box.onclick = null; // 點擊後鎖定
+    });
+
+    if (cleanClicked === cleanTarget) {
+        element.classList.add('correct-marker');
+        document.getElementById('tm-marker-msg').innerHTML = "✅ <b>Correct!</b> That's the tense marker.";
+    } else {
+        element.classList.add('wrong-selection');
+        if (targetBox) targetBox.classList.add('correct-marker');
+        document.getElementById('tm-marker-msg').innerHTML = `❌ Oops! The marker is <b>"${correctMarker}"</b>.`;
+    }
+
+    document.getElementById('tm-step1-feedback').style.display = 'block';
+    document.getElementById('tm-continue-btn').onclick = () => loadMCStep();
+}
+
+function loadMCStep() {
+    const q = tmState.questions[tmState.currentQuestionIndex];
+    const step2Area = document.getElementById('tm-step2-area');
+    step2Area.style.display = 'block';
+    step2Area.scrollIntoView({ behavior: 'smooth' });
+    
+    // 顯示帶有底線的答句
+    document.getElementById('tm-answer-sentence').innerText = q.correction; // 答句樣板放在 Correction 欄位
+    
+    const optionsContainer = document.getElementById('tm-options-container');
+    optionsContainer.innerHTML = '';
+
+    // 從 options 欄位抓取選項並打散 (假設選項用 | 隔開)
+    // 如果你還沒在 processGameData 處理 options 欄位，記得去那裡加上 row.options
+    const optionsArray = (q.options || "").split('|').sort(() => Math.random() - 0.5);
+
+    optionsArray.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        // 假設正確動詞答案放在另一個欄位，或我們用 q.correctVerb
+        // 這裡我們暫定正確答案是 q.correct_verb
+        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb); 
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function checkTMAnswer(btn, selected, correct) {
+    const q = tmState.questions[tmState.currentQuestionIndex];
+    const feedback = document.getElementById('tm-final-feedback');
+    const fullAnswer = q.correction.replace('___', correct);
+    
+    const allBtns = document.querySelectorAll('.option-btn');
+    allBtns.forEach(b => b.disabled = true);
+
+    if (selected === correct) {
+        btn.style.backgroundColor = "#28a745";
+        btn.style.color = "white";
+        feedback.innerHTML = `<span style="color:green; font-weight:bold;">✅ Well done!</span><br>${fullAnswer}`;
+        tmState.correctCount++;
+    } else {
+        btn.style.backgroundColor = "#dc3545";
+        btn.style.color = "white";
+        feedback.innerHTML = `<span style="color:red; font-weight:bold;">❌ Focus on the tense!</span><br>The answer is: <b>${correct}</b><br>${fullAnswer}`;
+    }
+
+    // 播放語音
+    speak(q.context + " ... " + fullAnswer);
+    
+    document.getElementById('tm-next-btn').style.display = 'inline-block';
+}
+
+function nextTenseQuestion() {
+    tmState.currentQuestionIndex++;
+    if (tmState.currentQuestionIndex < tmState.questions.length) {
+        loadTenseQuestion();
+    } else {
+        alert(`Finished! Your score: ${tmState.correctCount} / ${tmState.questions.length}`);
+        showScreen('menu-screen');
+    }
+}
+
+// 萬用的 speak 函式 (如果還沒定義的話)
+function speak(text) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'en-US';
+    msg.rate = 0.9;
+    window.speechSynthesis.speak(msg);
 }
 
 /**
