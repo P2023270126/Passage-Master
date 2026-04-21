@@ -160,19 +160,24 @@ function showTmOptions(q) {
     document.getElementById('tm-step2-area').style.display = "block";
     document.getElementById('tm-instruction').innerText = "Step 2: Choose the Correct Verb";
 
-    const opts = q.answer.split(',').map(s => s.trim()); // CSV Answer 擺放選項，Correction 擺正確答案
+    // 關鍵修正：用返你在 processGameData 定義嘅名 (假設係 verbOptions)
+    // 並且用 "|" 嚟 split，因為你 Sheet 入面係用 "|"
+    const rawOptions = q.verbOptions || ""; 
+    const opts = rawOptions.split('|').map(s => s.trim());
+
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
         btn.innerText = opt;
         btn.onclick = () => {
             const feedback = document.getElementById('tm-feedback');
-            if (opt === q.correction) {
+            // 關鍵修正：對比 finalAnswer (即係 Sheet 嘅 G 欄)
+            if (opt === q.finalAnswer) {
                 feedback.innerText = "✅ Perfect! Correct Tense!";
                 feedback.style.color = "green";
                 tmState.correctCount++;
             } else {
-                feedback.innerText = `❌ Wrong. The answer is "${q.correction}"`;
+                feedback.innerText = `❌ Wrong. The answer is "${q.finalAnswer}"`;
                 feedback.style.color = "red";
             }
             document.getElementById('tm-next-btn').style.display = "block";
