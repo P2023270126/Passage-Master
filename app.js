@@ -87,44 +87,46 @@ function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const container = document.getElementById('tm-sentence-container');
     const feedback = document.getElementById('tm-feedback');
+    const optionsCont = document.getElementById('tm-options');
     
-    // 顯示兩行：第一行係題目(搵 Marker)，第二行係填空句
-   // 重置狀態與清空舊內容
+    // 初始化畫面
     feedback.innerText = "";
     tmState.selectedMarker = false;
-    document.getElementById('tm-options').style.pointerEvents = "auto";
-    document.getElementById('tm-options').innerHTML = "";
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
+    document.getElementById('tm-instruction').innerText = "Step 1: Click the Time Marker (時態提示詞)";
 
-    // 顯示兩行：第一行係題目(搵 Marker)，第二行係填空句
     container.innerHTML = `
-        <div style="font-size: 1rem; color: #666; margin-bottom: 10px;">Find the marker in this sentence:</div>
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
-        <div id="tm-fill-blank-line" style="font-weight: bold; color: #2c3e50;">${q.fullSentence}</div>
+        <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc;">${q.fullSentence}</div>
     `;
 
     const questionLine = document.getElementById('tm-question-line');
     const targetMarker = (q.marker || "").trim().toLowerCase();
 
-    // 處理 Column C 嘅題目，等 Jasper 點擊 Marker
     q.context.split(' ').forEach(word => {
         const cleanWord = word.replace(/[.,!?;:]/g, "").trim().toLowerCase();
         const span = document.createElement('span');
         span.innerText = word + " ";
         span.className = "tm-marker";
         span.onclick = () => {
-            if (tmState.selectedMarker) return;
+            if (tmState.selectedMarker) return; // 只能點一次
+            tmState.selectedMarker = true;
+
+            // 視覺反饋
             if (cleanWord === targetMarker) {
-                span.classList.add('selected');
-                tmState.selectedMarker = true;
-                feedback.innerText = "🎯 Found it! Now choose the verb.";
-                feedback.style.color = "blue";
-                showTmOptions(q);
+                span.classList.add('selected'); // 變藍色
+                feedback.innerText = "🎯 Well found! Now choose the verb.";
             } else {
-                feedback.innerText = "❌ Not this one!";
-                feedback.style.color = "red";
+                span.style.color = "orange"; // 點錯字變橙色，但依然繼續
+                feedback.innerText = `💡 The marker was actually "${q.marker}". Let's choose the verb!`;
             }
+
+            // 無論對錯，1秒後顯示 Step 2
+            setTimeout(() => {
+                showTmOptions(q);
+                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; // 點亮填空句
+            }, 800);
         };
         questionLine.appendChild(span);
     });
@@ -135,38 +137,35 @@ function showTmOptions(q) {
     const feedback = document.getElementById('tm-feedback');
     optionsCont.innerHTML = "";
     document.getElementById('tm-step2-area').style.display = "block";
+    document.getElementById('tm-instruction').innerText = "Step 2: Select the correct Verb Form";
 
-    // --- 防錯檢查：確保 verbOptions 存在，否則畀個預設值 ---
-    const rawOptions = q.verbOptions || ""; 
-    
-    if (rawOptions === "") {
-        feedback.innerText = "⚠️ Error: No verb options found in Column F!";
-        feedback.style.color = "orange";
-        return;
-    }
-
-    // 分拆選項
-    const opts = rawOptions.split('|').map(s => s.trim());
+    const opts = (q.verbOptions || "").split('|').map(s => s.trim());
     
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
         btn.innerText = opt;
         btn.onclick = () => {
-            // 對比 Column G (finalAnswer)
             if (opt === q.finalAnswer) {
-                feedback.innerText = "✅ Correct! Well done!";
+                feedback.innerText = "✅ Perfect! Listen to the sentence.";
                 feedback.style.color = "green";
+                
+                // 替換底線並朗讀
+                const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
+                speak(finalSentence); // 呼叫朗讀功能
+                // 將網頁上的底線句子換成正確的完整句子
+                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
-                optionsCont.style.pointerEvents = "none"; // 答啱咗就唔畀再撳
+                optionsCont.style.pointerEvents = "none";
             } else {
-                feedback.innerText = "❌ Wrong! Try again.";
+                feedback.innerText = "❌ Try another form!";
                 feedback.style.color = "red";
             }
         };
         optionsCont.appendChild(btn);
     });
+}
     optionsCont.style.pointerEvents = "auto";
 }
 
@@ -473,4 +472,13 @@ function filterByCategory(mode) {
     let filtered = gameData[mode].filter(q => selectedCat === 'all' || q.category === selectedCat);
     if (mode === 'Rearrange') { rearrangeState.questions = filtered; rearrangeState.currentQuestionIndex = 0; loadRearrangeQuestion(); }
     else if (mode === 'Spelling') { spellingState.questions = filtered; spellingState.currentQuestionIndex = 0; loadSpellingQuestion(); }
+}
+
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
 }
