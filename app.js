@@ -82,6 +82,15 @@ function loadTenseQuestion() {
     const feedback = document.getElementById('tm-feedback');
     
     // 顯示兩行：第一行係題目(搵 Marker)，第二行係填空句
+   // 重置狀態與清空舊內容
+    feedback.innerText = "";
+    tmState.selectedMarker = false;
+    document.getElementById('tm-options').style.pointerEvents = "auto";
+    document.getElementById('tm-options').innerHTML = "";
+    document.getElementById('tm-step2-area').style.display = "none";
+    document.getElementById('tm-next-btn').style.display = "none";
+
+    // 顯示兩行：第一行係題目(搵 Marker)，第二行係填空句
     container.innerHTML = `
         <div style="font-size: 1rem; color: #666; margin-bottom: 10px;">Find the marker in this sentence:</div>
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
