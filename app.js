@@ -232,15 +232,12 @@ function startRearrangeGame() {
 }
 
 /**
- * Tense Master 模式邏輯
+ * Tense Master 模式邏輯 - 修正整合版
  */
 function startTenseMaster() {
-    // 從 gameData 中過濾出 TenseMaster 模式的題目
-    // 注意：確保你在 Google Sheet 的 Mode 欄位寫的是 TenseMaster
     const questions = gameData.TenseMaster || []; 
-    
     if (questions.length === 0) {
-        return alert("找不到 Tense Master 題目！請檢查 Google Sheet 的 Mode 欄位。");
+        return alert("找不到 Tense Master 題目！請檢查 Google Sheet 的 Mode 欄位是否為 TenseMaster");
     }
 
     tmState.questions = [...questions];
@@ -251,38 +248,34 @@ function startTenseMaster() {
     loadTenseQuestion();
 }
 
-// 初始化題目時，確保只看見 Step 1
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     
-    // 1. 切換容器顯示狀態
+    // 1. 初始化介面：顯示 Step 1，隱藏 Step 2
     document.getElementById('tm-step1-container').style.display = 'block';
     document.getElementById('tm-step2-container').style.display = 'none';
     
-    // 2. 清空並準備 Step 1
     const container = document.getElementById('tm-sentence-container');
     container.innerHTML = '';
     document.getElementById('tm-marker-msg').innerHTML = '';
     document.getElementById('tm-continue-btn').style.display = 'none';
 
-    // 3. 建立單字按鈕
+    // 2. 建立單字按鈕 (Step 1: 選時態關鍵字)
     const words = q.context.split(' ');
     words.forEach(word => {
         const btn = document.createElement('button');
         btn.innerText = word;
-        btn.className = 'word-btn';
+        btn.className = 'word-btn'; // 確保 CSS 中有設定 word-btn 的大字體樣式
         btn.onclick = () => checkMarker(btn, word, q.answer);
         container.appendChild(btn);
     });
 }
 
-// Step 1: 使用者點擊單字後的回饋
 function checkMarker(btn, word, correctAnswer) {
     const msg = document.getElementById('tm-marker-msg');
     const continueBtn = document.getElementById('tm-continue-btn');
     const allBtns = document.querySelectorAll('#tm-sentence-container .word-btn');
 
-    // 簡單清理標點符號比對
     const cleanWord = word.toLowerCase().replace(/[?!.,]/g, '');
     const cleanCorrect = correctAnswer.toLowerCase().trim();
 
@@ -294,196 +287,84 @@ function checkMarker(btn, word, correctAnswer) {
         btn.style.backgroundColor = "#ffeaea";
         btn.style.borderColor = "#dc3545";
         msg.innerHTML = `<span style="color:#dc3545; font-size: 1.5rem; font-weight: bold;">❌ Oops! The marker is "${correctAnswer}".</span>`;
+        // 將正確的按鈕標示出來給 Jasper 看
+        allBtns.forEach(b => {
+            if(b.innerText.toLowerCase().replace(/[?!.,]/g, '') === cleanCorrect) {
+                b.style.border = "3px solid #28a745";
+            }
+        });
     }
 
-    // 禁用所有按鈕並顯示 Continue
     allBtns.forEach(b => b.disabled = true);
     continueBtn.style.display = 'inline-block';
 }
 
-// 切換場景：隱藏 Step 1，開啟 Step 2
+// 唯一確定的切換函式：進入 Step 2
 function goToStep2() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     
-    // 切換顯示容器
+    // 隱藏 Step 1，顯示 Step 2
     document.getElementById('tm-step1-container').style.display = 'none';
     document.getElementById('tm-step2-container').style.display = 'block';
     
-    // 重點：在 Step 2 上方顯示 Step 1 的原句
-    document.getElementById('tm-context-reference').innerText = q.context;
+    // 顯示 Step 1 的原句供參考
+    const refArea = document.getElementById('tm-context-reference');
+    if(refArea) refArea.innerHTML = `<p style="color: #666; font-style: italic;">Context: ${q.context}</p>`;
     
-    // 載入 Step 2 的題目與選項
-    loadMCStep(q);
-}
-
-function loadMCStep(q) {
-    const clozeContainer = document.getElementById('tm-cloze-sentence');
-    const optionsContainer = document.getElementById('tm-options-container');
-    const feedback = document.getElementById('tm-final-feedback');
-
-    clozeContainer.innerText = q.correction; // 例如 "I ___ to the park."
-    optionsContainer.innerHTML = '';
-    feedback.innerHTML = '';
-
-    const opts = q.options.split('|');
-    opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.innerText = opt;
-        btn.className = 'option-btn'; // 使用你在 CSS 定義的大按鈕樣式
-        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
-        optionsContainer.appendChild(btn);
-    });
-}
-
-/**
- * Tense Master - 從 Step 1 切換到 Step 2
- */
-function goToStep2() {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    
-    // 1. 隱藏 Step 1 容器，顯示 Step 2 容器
-    document.getElementById('tm-step1-container').style.display = 'none';
-    document.getElementById('tm-step2-container').style.display = 'block';
-    
-    // 2. 在 Step 2 上方顯示 Step 1 的原句作為參考 (Context)
-    document.getElementById('tm-context-reference').innerText = `Question Context: ${q.context}`;
-    
-    // 3. 呼叫原本載入 Step 2 選擇題的函式
-    loadMCStep(q);
-}
-
-// 點擊 Continue 後觸發
-function goToStep2() {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    
-    // 1. 隱藏 Step 1，顯示 Step 2
-    document.getElementById('tm-step1-container').style.display = 'none';
-    document.getElementById('tm-step2-container').style.display = 'block';
-    
-    // 2. 設定 Step 2 的參考原句 (Step 1 的題目)
-    document.getElementById('tm-context-reference').innerText = q.context;
-    
-    // 3. 載入 Step 2 的選擇題
-    loadMCStep(q);
-}
-
-function loadMCStep(q) {
+    // 載入 Step 2 選擇題
     const clozeContainer = document.getElementById('tm-cloze-sentence');
     const optionsContainer = document.getElementById('tm-options-container');
     const feedback = document.getElementById('tm-final-feedback');
     const nextBtn = document.getElementById('tm-next-btn');
 
-    // 清空舊內容
-    clozeContainer.innerText = q.correction; // 例如: "I ___ to the park yesterday."
+    clozeContainer.innerText = q.correction; 
     optionsContainer.innerHTML = '';
     feedback.innerHTML = '';
     nextBtn.style.display = 'none';
 
-    // 生成選項按鈕
+    // 處理選項 (打散)
     const rawOptions = q.options || "";
     if (rawOptions) {
-        const opts = rawOptions.split('|');
+        const opts = rawOptions.split('|').map(o => o.trim()).filter(o => o !== "");
+        opts.sort(() => Math.random() - 0.5);
         opts.forEach(opt => {
             const btn = document.createElement('button');
             btn.innerText = opt;
-            btn.className = 'option-btn'; // 記得在 CSS 設定這個 class 的字體大小
+            btn.className = 'option-btn'; 
             btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
             optionsContainer.appendChild(btn);
         });
     }
 }
-function handleMarkerClick(element, clickedWord, correctMarker) {
-    const cleanClicked = clickedWord.replace(/[?!.,]/g, "").toLowerCase();
-    const cleanTarget = correctMarker.replace(/[?!.,]/g, "").toLowerCase();
-    
-    const allBoxes = document.querySelectorAll('.word-box');
-    let targetBox = null;
 
-    allBoxes.forEach(box => {
-        if (box.innerText.replace(/[?!.,]/g, "").toLowerCase() === cleanTarget) targetBox = box;
-        box.onclick = null; // 點擊後鎖定
-    });
-
-    if (cleanClicked === cleanTarget) {
-        element.classList.add('correct-marker');
-        document.getElementById('tm-marker-msg').innerHTML = "✅ <b>Correct!</b> That's the tense marker.";
-    } else {
-        element.classList.add('wrong-selection');
-        if (targetBox) targetBox.classList.add('correct-marker');
-        document.getElementById('tm-marker-msg').innerHTML = `❌ Oops! The marker is <b>"${correctMarker}"</b>.`;
-    }
-
-    document.getElementById('tm-step1-feedback').style.display = 'block';
-    document.getElementById('tm-continue-btn').onclick = () => loadMCStep();
-}
-
-/**
- * Step 2: 載入選擇題 (MC)
- */
-function loadMCStep() {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    const step2Area = document.getElementById('tm-step2-area');
-    const optionsContainer = document.getElementById('tm-options-container');
-    
-    // 確保介面重置
-    step2Area.style.display = 'block';
-    document.getElementById('tm-final-feedback').innerHTML = '';
-    document.getElementById('tm-next-btn').style.display = 'none';
-    optionsContainer.innerHTML = '';
-
-    // 顯示填空句子
-    document.getElementById('tm-answer-sentence').innerText = q.correction || "";
-
-    // 處理選項並打散
-    const rawOptions = q.options || "";
-    if (rawOptions) {
-        const optionsArray = rawOptions.split('|').map(s => s.trim()).filter(s => s !== "");
-        optionsArray.sort(() => Math.random() - 0.5);
-
-        optionsArray.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            // 點擊後才執行判斷
-            btn.onclick = function() {
-                checkTMAnswer(btn, opt, q.correct_verb);
-            };
-            optionsContainer.appendChild(btn);
-        });
-    }
-
-    // 平滑滾動讓 Jasper 看到選項
-    step2Area.scrollIntoView({ behavior: 'smooth' });
-}
-
-/**
- * 判斷 Step 2 答案
- */
 function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const feedback = document.getElementById('tm-final-feedback');
+    const nextBtn = document.getElementById('tm-next-btn');
     
-    // 禁用所有按鈕防止連點
-    const allBtns = document.querySelectorAll('.option-btn');
+    const allBtns = document.querySelectorAll('#tm-options-container .option-btn');
     allBtns.forEach(b => b.disabled = true);
 
     const cleanSelected = selectedValue.trim().toLowerCase();
     const cleanCorrect = (correctAnswer || "").trim().toLowerCase();
+    
+    // 組合完整句子播放語音
     const fullSentence = q.correction.replace('___', (correctAnswer || "____"));
 
     if (cleanSelected === cleanCorrect) {
         clickedBtn.style.backgroundColor = "#28a745";
         clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#28a745; font-weight:bold; margin-top:10px;">✅ Excellent!</div><div>${fullSentence}</div>`;
+        feedback.innerHTML = `<div style="color:#28a745; font-size:1.8rem; font-weight:bold; margin:15px 0;">✅ Excellent!</div>`;
         tmState.correctCount++;
     } else {
         clickedBtn.style.backgroundColor = "#dc3545";
         clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#dc3545; font-weight:bold; margin-top:10px;">❌ Focus on the tense!</div><div>The answer is: <b style="color:#28a745">${correctAnswer}</b></div><div>${fullSentence}</div>`;
+        feedback.innerHTML = `<div style="color:#dc3545; font-size:1.8rem; font-weight:bold; margin:15px 0;">❌ Focus on the tense!</div>
+                              <div style="font-size:1.2rem;">The answer is: <b style="color:#28a745">${correctAnswer}</b></div>`;
     }
 
-    speak(fullSentence);
-    document.getElementById('tm-next-btn').style.display = 'inline-block';
+    speak(fullSentence); // 播放正確句子的聲音
+    nextBtn.style.display = 'inline-block';
 }
 
 function nextTenseQuestion() {
