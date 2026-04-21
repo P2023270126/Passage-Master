@@ -10,6 +10,49 @@
 
     <!-- 2. 強效 CSS 修正區 -->
     <style>
+
+        /* 1. 放大 Step 1 的回饋文字 (✅ Correct! / ❌ Oops!) */
+#tm-marker-msg {
+    font-size: 1.5rem; /* 放大為原始大小的 1.5 倍 */
+    margin: 20px 0;
+    line-height: 1.4;
+}
+
+/* 2. 讓「Continue」和「Back to Menu」按鈕變大且更漂亮 */
+#tm-continue-btn, 
+button[onclick="showScreen('menu-screen')"] {
+    font-size: 1.25rem;      /* 字體放大 */
+    padding: 12px 24px;     /* 增加按鈕內距，讓它更好點擊 */
+    cursor: pointer;
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    border-radius: 8px;     /* 圓角 */
+    transition: all 0.2s;    /* 增加觸碰動畫 */
+    margin: 10px 5px;
+}
+
+/* 按鈕滑鼠經過時的效果 */
+#tm-continue-btn:hover {
+    background-color: #e2e6ea;
+    transform: scale(1.05); /* 輕微放大效果 */
+}
+
+/* 3. 針對 Step 2 的回饋與下一題按鈕也同步放大 */
+#tm-final-feedback {
+    font-size: 1.5rem; 
+    margin-top: 15px;
+}
+
+#tm-next-btn {
+    font-size: 1.3rem;
+    padding: 15px 30px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+}
+        
+        
         /* 強制固定重組句子的顯示容器 */
         .word-slots {
             display: flex !important;
