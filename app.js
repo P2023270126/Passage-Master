@@ -2,24 +2,6 @@
  * app.js - 完整整合版
  */
 
-/**
- * 處理身份選擇
- * @param {string} user - 使用者名稱 (例如 'Jasper' 或 'Jolie')
- */
-function selectUser(user) {
-    console.log("Selected user:", user);
-    
-    // 1. 你可以在這裡記錄是誰在玩 (選填)
-    // localStorage.setItem('currentPlayer', user);
-    
-    // 2. 切換到主選單畫面
-    showScreen('menu-screen');
-    
-    // 3. 視情況彈出歡迎語 (增加趣味性)
-    const welcomeMsg = user === 'Jasper' ? "Hi Jasper! Let's practice!" : "Hello Jolie! Ready to learn?";
-    console.log(welcomeMsg);
-}
-
 // 1. 設定區
 const CSV_CONFIG = {
     "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv", 
@@ -46,8 +28,6 @@ let rearrangeState = {
     userAnswerArray: []
 };
 
-// ... 之前的 spellingState, rearrangeState ...
-
 let proofreadState = {
     currentQuestionIndex: 0,
     correctCount: 0,
@@ -56,24 +36,14 @@ let proofreadState = {
     correctAnswer: ""
 };
 
-// [在這裡新增] Tense Master 的狀態
-let tmState = {
-    currentQuestionIndex: 0,
-    correctCount: 0,
-    questions: []
-};
-
 /**
  * 基礎功能：身份、資料抓取與畫面切換
  */
 function selectUser(userId) {
     currentUser = userId;
-    console.log("Selected user ID:", userId);
-    
     const url = CSV_CONFIG[userId];
     if (url) {
-        const name = userId === '66' ? 'Jasper' : 'Jolie';
-        document.getElementById('welcome-msg').innerText = `Welcome, ${name}`;
+        document.getElementById('welcome-msg').innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
         fetchData(url);
     } else {
         alert("錯誤：找不到設定的 URL");
@@ -95,31 +65,23 @@ function fetchData(url) {
 }
 
 function processGameData(rawData) {
-    // 初始化各個模式的陣列
-    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [], TenseMaster: [] };
-
+    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [] };
     rawData.forEach(row => {
         if (row.Mode) {
             const mode = row.Mode.trim();
             if (gameData[mode]) {
-                // 建立基礎物件
-                let item = {
-                    category: row.Category || "",
-                    context: row.Context || "",
-                    answer: row.Answer || ""
-                };
-
-                // 強制抓取所有可能的欄位，避免漏掉
-                item.correction = row.Correction || row.correction || "";
-                item.options = row.Options || row.options || "";
-                item.correct_verb = row.Correct_Verb || row.correct_verb || "";
-
-                gameData[mode].push(item);
+                gameData[mode].push({
+                    category: row.Category,
+                    context: row.Context,
+                    answer: row.Answer,
+                    // 確保這裡的鍵名 (Key) 跟 Google Sheet 表頭完全一樣
+                    correction: row.Correction || row.correction 
+                });
             }
         }
     });
-    console.log("Data loaded successfully:", gameData); // 在控制台確認資料是否有抓到
 }
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
     document.getElementById(screenId).style.display = 'block';
@@ -133,39 +95,34 @@ function logout() {
 function startSpellingGame() {
     const questions = gameData.Spelling;
     if (questions.length === 0) return alert("找不到拼字題目！");
-
+    
+    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
     updateCategoryDropdown('Spelling'); 
 
-    // 打亂拼字題目順序
-    spellingState.questions = shuffleArray([...questions]); 
-    
+    spellingState.questions = [...questions]; 
     spellingState.currentQuestionIndex = 0;
     spellingState.correctCount = 0;
     showScreen('spelling-screen');
-    loadSpellingQuestion(spellingState.questions[0]);
+    loadSpellingQuestion();
 }
 
-function loadSpellingQuestion(q) {
-    // 加上判斷式，如果抓不到元素就顯示警告，而不是直接崩潰
-    const imgCont = document.getElementById('spelling-image-container');
-    const sentCont = document.getElementById('spelling-sentence');
-    const inputField = document.getElementById('spelling-input');
-
-    if (!imgCont || !sentCont || !inputField) {
-        console.error("Spelling 模式找不到必要的 HTML 元素！請檢查 index.html 的 ID。");
-        return; 
+function loadSpellingQuestion() {
+    document.getElementById('spelling-feedback').style.display = 'none';
+    document.getElementById('spelling-options').style.pointerEvents = 'auto'; 
+    const item = spellingState.questions[spellingState.currentQuestionIndex];
+    const targetWord = item.answer.toLowerCase().trim();
+    spellingState.userAnswer = ""; 
+    const displaySentence = item.context.replace(new RegExp(item.answer, 'gi'), "______");
+    document.getElementById('spelling-sentence').innerText = displaySentence;
+    const displayArea = document.getElementById('spelling-word-display');
+    displayArea.innerHTML = "";
+    for (let i = 0; i < targetWord.length; i++) {
+        const span = document.createElement('span');
+        span.className = "letter-slot";
+        span.innerText = "_";
+        displayArea.appendChild(span);
     }
-
-    // 正常執行邏輯
-    imgCont.style.display = (q.image_url && q.image_url.trim() !== "") ? 'block' : 'none';
-    if (q.image_url) imgCont.innerHTML = `<img src="${q.image_url}" style="max-width:100%; border-radius:10px;">`;
-
-    sentCont.innerText = q.context || "";
-    inputField.value = "";
-    inputField.focus();
-
-    const feedback = document.getElementById('spelling-feedback');
-    if (feedback) feedback.innerText = "";
+    renderLetterButtons(targetWord, item.options);
 }
 
 function renderLetterButtons(answer, extraOptions) {
@@ -226,177 +183,14 @@ function startRearrangeGame() {
     const questions = gameData.Rearrange;
     if (!questions || questions.length === 0) return alert("找不到重組題目！");
 
+    // [新增這行] 每次進遊戲都抓取最新的 Category 塞進選單
     updateCategoryDropdown('Rearrange');
 
-    // 打亂重組題目順序
-    rearrangeState.questions = shuffleArray([...questions]);
-
+    rearrangeState.questions = [...questions];
     rearrangeState.currentQuestionIndex = 0;
     rearrangeState.correctCount = 0;
     showScreen('rearrange-screen');
     loadRearrangeQuestion();
-}
-
-/**
- * Tense Master 模式邏輯 - 修正整合版
- */
-function startTenseMaster() {
-    const questions = gameData.TenseMaster || []; 
-    if (questions.length === 0) return alert("找不到題目！");
-
-    // 將複製出來的題目陣列打亂順序
-    tmState.questions = shuffleArray([...questions]); 
-    
-    tmState.currentQuestionIndex = 0;
-    tmState.correctCount = 0;
-    showScreen('tense-master-screen');
-    loadTenseQuestion();
-}
-
-function loadTenseQuestion() {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    
-    // 1. 初始化介面：顯示 Step 1，隱藏 Step 2
-    document.getElementById('tm-step1-container').style.display = 'block';
-    document.getElementById('tm-step2-container').style.display = 'none';
-    
-    const container = document.getElementById('tm-sentence-container');
-    container.innerHTML = '';
-    document.getElementById('tm-marker-msg').innerHTML = '';
-    document.getElementById('tm-continue-btn').style.display = 'none';
-
-    // 2. 建立單字按鈕 (Step 1: 選時態關鍵字)
-    const words = q.context.split(' ');
-    words.forEach(word => {
-        const btn = document.createElement('button');
-        btn.innerText = word;
-        btn.className = 'word-btn'; // 確保 CSS 中有設定 word-btn 的大字體樣式
-        btn.onclick = () => checkMarker(btn, word, q.answer);
-        container.appendChild(btn);
-    });
-}
-
-function checkMarker(btn, word, correctAnswer) {
-    const msg = document.getElementById('tm-marker-msg');
-    const continueBtn = document.getElementById('tm-continue-btn');
-    const allBtns = document.querySelectorAll('#tm-sentence-container .word-btn');
-
-    const cleanWord = word.toLowerCase().replace(/[?!.,]/g, '');
-    const cleanCorrect = correctAnswer.toLowerCase().trim();
-
-    if (cleanWord === cleanCorrect) {
-        btn.style.backgroundColor = "#eaffea";
-        btn.style.borderColor = "#28a745";
-        msg.innerHTML = '<span style="color:#28a745; font-size: 1.5rem; font-weight: bold;">✅ Correct! That is the marker!</span>';
-    } else {
-        btn.style.backgroundColor = "#ffeaea";
-        btn.style.borderColor = "#dc3545";
-        msg.innerHTML = `<span style="color:#dc3545; font-size: 1.5rem; font-weight: bold;">❌ Oops! The marker is "${correctAnswer}".</span>`;
-        // 將正確的按鈕標示出來給 Jasper 看
-        allBtns.forEach(b => {
-            if(b.innerText.toLowerCase().replace(/[?!.,]/g, '') === cleanCorrect) {
-                b.style.border = "3px solid #28a745";
-            }
-        });
-    }
-
-    allBtns.forEach(b => b.disabled = true);
-    continueBtn.style.display = 'inline-block';
-}
-
-function goToStep2() {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    
-    // 1. 顯示容器
-    document.getElementById('tm-step1-container').style.display = 'none';
-    document.getElementById('tm-step2-container').style.display = 'block';
-    
-    // 2. 更新上方參考句子 (深綠色、加粗、放大)
-    const refArea = document.getElementById('tm-context-reference');
-    if (refArea) {
-        refArea.innerHTML = `
-            <p style="color: #1a5928; font-weight: bold; font-size: 2.0rem; margin-bottom: 20px; background-color: #f0f9f1; padding: 10px; border-radius: 8px; display: inline-block;">
-                ${q.context}
-            </p>`;
-    }
-
-    // 3. 核心修正：確保 Step 2 的句子與選項容器存在並填入內容
-    const clozeContainer = document.getElementById('tm-cloze-sentence');
-    const optionsContainer = document.getElementById('tm-options-container');
-    const feedback = document.getElementById('tm-final-feedback');
-    const nextBtn = document.getElementById('tm-next-btn');
-
-    // 如果 HTML 裡沒這些 ID，這行會報錯，所以我們要確保它們都有顯示
-    if (clozeContainer && optionsContainer) {
-        clozeContainer.innerText = q.correction || ""; 
-        optionsContainer.innerHTML = '';
-        if (feedback) feedback.innerHTML = '';
-        if (nextBtn) nextBtn.style.display = 'none';
-
-        // 4. 產生選項按鈕
-        const rawOptions = q.options || "";
-        const opts = rawOptions.split('|').map(o => o.trim()).filter(o => o !== "");
-        opts.sort(() => Math.random() - 0.5);
-
-        opts.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.innerText = opt;
-            btn.className = 'option-btn'; 
-            btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
-            optionsContainer.appendChild(btn);
-        });
-    } else {
-        console.error("找不到 tm-cloze-sentence 或 tm-options-container！請檢查 HTML。");
-    }
-}
-
-function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
-    const q = tmState.questions[tmState.currentQuestionIndex];
-    const feedback = document.getElementById('tm-final-feedback');
-    const nextBtn = document.getElementById('tm-next-btn');
-    
-    const allBtns = document.querySelectorAll('#tm-options-container .option-btn');
-    allBtns.forEach(b => b.disabled = true);
-
-    const cleanSelected = selectedValue.trim().toLowerCase();
-    const cleanCorrect = (correctAnswer || "").trim().toLowerCase();
-    
-    // 組合完整句子播放語音
-    const fullSentence = q.correction.replace('___', (correctAnswer || "____"));
-
-    if (cleanSelected === cleanCorrect) {
-        clickedBtn.style.backgroundColor = "#28a745";
-        clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#28a745; font-size:1.8rem; font-weight:bold; margin:15px 0;">✅ Excellent!</div>`;
-        tmState.correctCount++;
-    } else {
-        clickedBtn.style.backgroundColor = "#dc3545";
-        clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#dc3545; font-size:1.8rem; font-weight:bold; margin:15px 0;">❌ Focus on the tense!</div>
-                              <div style="font-size:1.2rem;">The answer is: <b style="color:#28a745">${correctAnswer}</b></div>`;
-    }
-
-    speak(fullSentence); // 播放正確句子的聲音
-    nextBtn.style.display = 'inline-block';
-}
-
-function nextTenseQuestion() {
-    tmState.currentQuestionIndex++;
-    if (tmState.currentQuestionIndex < tmState.questions.length) {
-        loadTenseQuestion();
-    } else {
-        alert(`Finished! Your score: ${tmState.correctCount} / ${tmState.questions.length}`);
-        showScreen('menu-screen');
-    }
-}
-
-// 萬用的 speak 函式 (如果還沒定義的話)
-function speak(text) {
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'en-US';
-    msg.rate = 0.9;
-    window.speechSynthesis.speak(msg);
 }
 
 /**
@@ -680,24 +474,10 @@ function filterByCategory(mode) {
         spellingState.currentQuestionIndex = 0;
         spellingState.correctCount = 0;
         loadSpellingQuestion();
-    } else if (mode === 'Proofread') {
+    } else if (mode === 'Proofread') { // [新增]
         proofreadState.questions = filteredQuestions;
         proofreadState.currentQuestionIndex = 0;
         proofreadState.correctCount = 0;
         loadProofreadQuestion();
-    } else if (mode === 'TenseMaster') { // [新增這一段]
-        tmState.questions = filteredQuestions;
-        tmState.currentQuestionIndex = 0;
-        tmState.correctCount = 0;
-        loadTenseQuestion();
     }
-}
-
-// 隨機打亂陣列的工具函式
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
 }
