@@ -189,7 +189,13 @@ function showTmOptions(q) {
                 speak(finalSentence);
                 
                 tmState.correctCount++;
-                document.getElementById('tm-next-btn').style.display = "block";
+                const nextBtn = document.getElementById('tm-next-btn');
+                if (nextBtn) {
+                    nextBtn.style.display = "block";       // 顯示按鈕
+                    nextBtn.style.margin = "60px auto";    // 置中並增加上下邊距（防撞）
+                    nextBtn.style.transform = "scale(3)";  // 放大 3 倍
+                    nextBtn.style.fontSize = "16px";       // 確保字體清晰
+                }
                 optionsCont.style.pointerEvents = "none";
             } else {
                 feedback.innerHTML = `<span style="color: red;">❌ Try another form!</span>`;
