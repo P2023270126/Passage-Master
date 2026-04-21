@@ -28,12 +28,21 @@ let rearrangeState = {
     userAnswerArray: []
 };
 
+// ... 之前的 spellingState, rearrangeState ...
+
 let proofreadState = {
     currentQuestionIndex: 0,
     correctCount: 0,
     questions: [],
     targetWord: "",
     correctAnswer: ""
+};
+
+// [在這裡新增] Tense Master 的狀態
+let tmState = {
+    currentQuestionIndex: 0,
+    correctCount: 0,
+    questions: []
 };
 
 /**
@@ -474,10 +483,15 @@ function filterByCategory(mode) {
         spellingState.currentQuestionIndex = 0;
         spellingState.correctCount = 0;
         loadSpellingQuestion();
-    } else if (mode === 'Proofread') { // [新增]
+    } else if (mode === 'Proofread') {
         proofreadState.questions = filteredQuestions;
         proofreadState.currentQuestionIndex = 0;
         proofreadState.correctCount = 0;
         loadProofreadQuestion();
+    } else if (mode === 'TenseMaster') { // [新增這一段]
+        tmState.questions = filteredQuestions;
+        tmState.currentQuestionIndex = 0;
+        tmState.correctCount = 0;
+        loadTenseQuestion();
     }
 }
