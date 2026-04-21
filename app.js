@@ -17,14 +17,12 @@ let rearrangeState = { currentQuestionIndex: 0, correctCount: 0, questions: [], 
 let proofreadState = { currentQuestionIndex: 0, correctCount: 0, questions: [], targetWord: "", correctAnswer: "" };
 let tmState = { currentQuestionIndex: 0, correctCount: 0, questions: [], selectedMarker: false };
 
-// --- 基礎功能 ---
-function selectUser(userId) {
-    currentUser = userId;
-    const url = CSV_CONFIG[userId];
-    if (url) {
-        document.getElementById('welcome-msg').innerText = `Welcome, ${userId === '66' ? 'Jasper' : 'Jolie'}`;
-        fetchData(url);
-    }
+// 確保 Function 名稱同 HTML 裡面 onclick 寫的一模一樣
+function selectUser(userName) {
+    console.log("Selected user:", userName);
+    // 這裡通常是儲存使用者名稱並隱藏登入畫面
+    currentUser = userName; 
+    showScreen('menu-screen'); // 或者是跳轉到主選單的 Function
 }
 
 function fetchData(url) {
