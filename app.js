@@ -85,24 +85,26 @@ function startTenseMaster() {
 
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
-    const container = document.getElementById('tm-sentence-container');
+    const questionLine = document.getElementById('tm-question-line'); // 注意：你 HTML 仲未有呢個 ID，請睇下面補充
+    const fillLine = document.getElementById('tm-fill-blank-line');
     const feedback = document.getElementById('tm-feedback');
-    const optionsCont = document.getElementById('tm-options');
     
-    // 初始化畫面
+    // 初始化
     feedback.innerText = "";
     tmState.selectedMarker = false;
     document.getElementById('tm-step2-area').style.display = "none";
     document.getElementById('tm-next-btn').style.display = "none";
-    document.getElementById('tm-instruction').innerText = "Step 1: Click the Time Marker (時態提示詞)";
-
-    container.innerHTML = `
+    
+    // 顯示 Step 1 題目句子 (Column C)
+    // 我們需要一個地方放 Step 1 的單字點擊，建議將 tm-sentence-container 清空再放入
+    const sentenceCont = document.getElementById('tm-sentence-container');
+    sentenceCont.innerHTML = `
         <div id="tm-question-line" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;"></div>
-        <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc;">${q.fullSentence}</div>
+        <div id="tm-fill-blank-line" style="font-weight: bold; color: #ccc; margin-top: 15px;">${q.fullSentence}</div>
     `;
 
-    const questionLine = document.getElementById('tm-question-line');
     const targetMarker = (q.marker || "").trim().toLowerCase();
+    const qLine = document.getElementById('tm-question-line');
 
     q.context.split(' ').forEach(word => {
         const cleanWord = word.replace(/[.,!?;:]/g, "").trim().toLowerCase();
@@ -110,25 +112,23 @@ function loadTenseQuestion() {
         span.innerText = word + " ";
         span.className = "tm-marker";
         span.onclick = () => {
-            if (tmState.selectedMarker) return; // 只能點一次
+            if (tmState.selectedMarker) return;
             tmState.selectedMarker = true;
-
-            // 視覺反饋
+            
             if (cleanWord === targetMarker) {
-                span.classList.add('selected'); // 變藍色
-                feedback.innerText = "🎯 Well found! Now choose the verb.";
+                span.classList.add('selected');
+                feedback.innerText = "🎯 Well found!";
             } else {
-                span.style.color = "orange"; // 點錯字變橙色，但依然繼續
-                feedback.innerText = `💡 The marker was actually "${q.marker}". Let's choose the verb!`;
+                span.style.color = "orange";
+                feedback.innerText = `💡 Note: "${q.marker}" is the marker.`;
             }
-
-            // 無論對錯，1秒後顯示 Step 2
+            
             setTimeout(() => {
                 showTmOptions(q);
-                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; // 點亮填空句
+                document.getElementById('tm-fill-blank-line').style.color = "#2c3e50"; // 點亮句子
             }, 800);
         };
-        questionLine.appendChild(span);
+        qLine.appendChild(span);
     });
 }
 
@@ -150,9 +150,10 @@ function showTmOptions(q) {
                 feedback.innerText = "✅ Perfect! Listen to the sentence.";
                 feedback.style.color = "green";
                 
-                // 替換底線並朗讀
+               // 在 showTmOptions 的 if (opt === q.finalAnswer) 區塊內加入：
                 const finalSentence = q.fullSentence.replace("___", q.finalAnswer);
-                speak(finalSentence); // 呼叫朗讀功能
+                document.getElementById('tm-fill-blank-line').innerText = finalSentence;
+                speak(finalSentence);
                 // 將網頁上的底線句子換成正確的完整句子
                 document.getElementById('tm-fill-blank-line').innerText = finalSentence;
                 tmState.correctCount++;
