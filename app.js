@@ -276,41 +276,62 @@ function loadTenseQuestion() {
     });
 }
 
-/**
- * Tense Master - Step 1: 檢查使用者點擊的單字是否為時態標記 (Marker)
- */
+// Step 1: 使用者點擊單字後的回饋
 function checkMarker(btn, word, correctAnswer) {
     const msg = document.getElementById('tm-marker-msg');
     const continueBtn = document.getElementById('tm-continue-btn');
-    
-    // 取得所有單字按鈕，點擊後禁用，防止重複點擊
-    const allWordBtns = document.querySelectorAll('.word-btn');
-    
-    // 簡單清理標點符號再比對
+    const allBtns = document.querySelectorAll('#tm-sentence-container .word-btn');
+
+    // 簡單清理標點符號比對
     const cleanWord = word.toLowerCase().replace(/[?!.,]/g, '');
     const cleanCorrect = correctAnswer.toLowerCase().trim();
 
     if (cleanWord === cleanCorrect) {
-        // 答對了：按鈕變綠色，顯示正確訊息
-        btn.style.borderColor = '#28a745';
-        btn.style.backgroundColor = '#eaffea';
-        btn.style.color = '#28a745';
-        msg.innerHTML = '<b style="color:#28a745">✅ Correct! That\'s the tense marker.</b>';
+        btn.style.backgroundColor = "#eaffea";
+        btn.style.borderColor = "#28a745";
+        msg.innerHTML = '<span style="color:#28a745; font-size: 1.5rem; font-weight: bold;">✅ Correct! That is the marker!</span>';
     } else {
-        // 答錯了：按鈕變紅色，提示正確答案
-        btn.style.borderColor = '#dc3545';
-        btn.style.backgroundColor = '#ffeaea';
-        btn.style.color = '#dc3545';
-        msg.innerHTML = `<b style="color:#dc3545">❌ Oops! The marker is "${correctAnswer}".</b>`;
+        btn.style.backgroundColor = "#ffeaea";
+        btn.style.borderColor = "#dc3545";
+        msg.innerHTML = `<span style="color:#dc3545; font-size: 1.5rem; font-weight: bold;">❌ Oops! The marker is "${correctAnswer}".</span>`;
     }
 
-    // 無論對錯，都顯示「Continue ^_^」按鈕，讓 Jasper 進入 Step 2
+    // 禁用所有按鈕並顯示 Continue
+    allBtns.forEach(b => b.disabled = true);
     continueBtn.style.display = 'inline-block';
+}
+
+// 切換場景：隱藏 Step 1，開啟 Step 2
+function goToStep2() {
+    const q = tmState.questions[tmState.currentQuestionIndex];
     
-    // 為了視覺效果，選完後讓其他按鈕稍微變淡
-    allWordBtns.forEach(b => {
-        b.disabled = true; // 鎖定按鈕
-        if (b !== btn) b.style.opacity = '0.5';
+    // 切換顯示容器
+    document.getElementById('tm-step1-container').style.display = 'none';
+    document.getElementById('tm-step2-container').style.display = 'block';
+    
+    // 重點：在 Step 2 上方顯示 Step 1 的原句
+    document.getElementById('tm-context-reference').innerText = q.context;
+    
+    // 載入 Step 2 的題目與選項
+    loadMCStep(q);
+}
+
+function loadMCStep(q) {
+    const clozeContainer = document.getElementById('tm-cloze-sentence');
+    const optionsContainer = document.getElementById('tm-options-container');
+    const feedback = document.getElementById('tm-final-feedback');
+
+    clozeContainer.innerText = q.correction; // 例如 "I ___ to the park."
+    optionsContainer.innerHTML = '';
+    feedback.innerHTML = '';
+
+    const opts = q.options.split('|');
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.innerText = opt;
+        btn.className = 'option-btn'; // 使用你在 CSS 定義的大按鈕樣式
+        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
+        optionsContainer.appendChild(btn);
     });
 }
 
