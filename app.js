@@ -2,6 +2,24 @@
  * app.js - 完整整合版
  */
 
+/**
+ * 處理身份選擇
+ * @param {string} user - 使用者名稱 (例如 'Jasper' 或 'Jolie')
+ */
+function selectUser(user) {
+    console.log("Selected user:", user);
+    
+    // 1. 你可以在這裡記錄是誰在玩 (選填)
+    // localStorage.setItem('currentPlayer', user);
+    
+    // 2. 切換到主選單畫面
+    showScreen('menu-screen');
+    
+    // 3. 視情況彈出歡迎語 (增加趣味性)
+    const welcomeMsg = user === 'Jasper' ? "Hi Jasper! Let's practice!" : "Hello Jolie! Ready to learn?";
+    console.log(welcomeMsg);
+}
+
 // 1. 設定區
 const CSV_CONFIG = {
     "66": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTh9dDHpQwH8uY0QJjkjlQKTnLyQokNhIgjNUD8B3zM83_2BuHI2z0_Zg57gX1i9fJO25pSK4pOcZyW/pub?output=csv", 
@@ -292,83 +310,73 @@ function handleMarkerClick(element, clickedWord, correctMarker) {
     document.getElementById('tm-continue-btn').onclick = () => loadMCStep();
 }
 
+/**
+ * Step 2: 載入選擇題 (MC)
+ */
 function loadMCStep() {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const step2Area = document.getElementById('tm-step2-area');
     const optionsContainer = document.getElementById('tm-options-container');
-    const feedback = document.getElementById('tm-final-feedback');
-    const nextBtn = document.getElementById('tm-next-btn');
-
-    // 1. 初始化 Step 2 介面
+    
+    // 確保介面重置
     step2Area.style.display = 'block';
-    feedback.innerHTML = '';
-    nextBtn.style.display = 'none';
+    document.getElementById('tm-final-feedback').innerHTML = '';
+    document.getElementById('tm-next-btn').style.display = 'none';
     optionsContainer.innerHTML = '';
 
-    // 2. 顯示答句樣板
+    // 顯示填空句子
     document.getElementById('tm-answer-sentence').innerText = q.correction || "";
 
-    // 3. 處理選項：確保 Options 欄位有資料
+    // 處理選項並打散
     const rawOptions = q.options || "";
-    if (!rawOptions) {
-        optionsContainer.innerHTML = '<p style="color:red;">Error: No options found in CSV</p>';
-        return;
+    if (rawOptions) {
+        const optionsArray = rawOptions.split('|').map(s => s.trim()).filter(s => s !== "");
+        optionsArray.sort(() => Math.random() - 0.5);
+
+        optionsArray.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            // 點擊後才執行判斷
+            btn.onclick = function() {
+                checkTMAnswer(btn, opt, q.correct_verb);
+            };
+            optionsContainer.appendChild(btn);
+        });
     }
 
-    // 將 "go|went|goes" 拆開並隨機排序
-    const optionsArray = rawOptions.split('|').map(s => s.trim()).filter(s => s !== "");
-    optionsArray.sort(() => Math.random() - 0.5);
-
-    // 4. 生成按鈕
-    optionsArray.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = opt;
-        
-        // 確保點擊時才執行判斷，傳入正確答案
-        btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
-        
-        optionsContainer.appendChild(btn);
-    });
-
-    // 平滑滾動到第二步
+    // 平滑滾動讓 Jasper 看到選項
     step2Area.scrollIntoView({ behavior: 'smooth' });
 }
 
+/**
+ * 判斷 Step 2 答案
+ */
 function checkTMAnswer(clickedBtn, selectedValue, correctAnswer) {
     const q = tmState.questions[tmState.currentQuestionIndex];
     const feedback = document.getElementById('tm-final-feedback');
-    const nextBtn = document.getElementById('tm-next-btn');
     
-    // 安全處理：轉為小寫比較，並移除多餘空格
-    const cleanSelected = selectedValue.trim().toLowerCase();
-    const cleanCorrect = (correctAnswer || "").trim().toLowerCase();
-
-    // 禁用所有選項按鈕，防止重複點擊
+    // 禁用所有按鈕防止連點
     const allBtns = document.querySelectorAll('.option-btn');
     allBtns.forEach(b => b.disabled = true);
 
-    // 組合完整句子用於語音和顯示
+    const cleanSelected = selectedValue.trim().toLowerCase();
+    const cleanCorrect = (correctAnswer || "").trim().toLowerCase();
     const fullSentence = q.correction.replace('___', (correctAnswer || "____"));
 
     if (cleanSelected === cleanCorrect) {
-        // 答對了
         clickedBtn.style.backgroundColor = "#28a745";
         clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#28a745; font-weight:bold; margin-top:10px;">✅ Excellent!</div><div style="font-size:1.1em; margin-top:5px;">${fullSentence}</div>`;
+        feedback.innerHTML = `<div style="color:#28a745; font-weight:bold; margin-top:10px;">✅ Excellent!</div><div>${fullSentence}</div>`;
         tmState.correctCount++;
     } else {
-        // 答錯了
         clickedBtn.style.backgroundColor = "#dc3545";
         clickedBtn.style.color = "white";
-        feedback.innerHTML = `<div style="color:#dc3545; font-weight:bold; margin-top:10px;">❌ Focus on the tense!</div><div style="margin-top:5px;">The answer is: <b style="color:#28a745">${correctAnswer}</b></div><div style="font-size:1.1em; margin-top:5px;">${fullSentence}</div>`;
+        feedback.innerHTML = `<div style="color:#dc3545; font-weight:bold; margin-top:10px;">❌ Focus on the tense!</div><div>The answer is: <b style="color:#28a745">${correctAnswer}</b></div><div>${fullSentence}</div>`;
     }
 
-    // 播放完整句子語音
     speak(fullSentence);
-    
-    // 顯示「下一題」按鈕
-    nextBtn.style.display = 'inline-block';
+    document.getElementById('tm-next-btn').style.display = 'inline-block';
 }
 
     // 播放語音
