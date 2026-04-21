@@ -74,39 +74,24 @@ function fetchData(url) {
 }
 
 function processGameData(rawData) {
-    // 1. 初始化所有遊戲模式的容器，包含新的 TenseMaster
-    gameData = { 
-        Spelling: [], 
-        Rearrange: [], 
-        Proofread: [], 
-        Cloze: [], 
-        TenseMaster: [] 
-    };
+    gameData = { Spelling: [], Rearrange: [], Proofread: [], Cloze: [], TenseMaster: [] };
 
     rawData.forEach(row => {
         if (row.Mode) {
             const mode = row.Mode.trim();
-            
-            // 2. 檢查該模式是否存在於我們的 gameData 結構中
             if (gameData[mode]) {
                 gameData[mode].push({
-                    category: row.Category,
-                    context: row.Context,
-                    answer: row.Answer,
-                    // 修正建議
-                    correction: row.Correction || row.correction,
-                    
-                    // --- [針對 Tense Master 新增的欄位] ---
-                    // Options 欄位用來放 MC 選擇題的選項 (例如: goes|went|gone)
+                    category: row.Category || "",
+                    // 關鍵修正：確保能抓到題目句子 (B107 所在的欄位)
+                    context: row.Context || row.context || "", 
+                    answer: row.Answer || row.answer || "",
+                    correction: row.Correction || row.correction || "",
                     options: row.Options || row.options || "",
-                    
-                    // Correct_Verb 欄位放正確的動詞形式 (例如: went)
                     correct_verb: row.Correct_Verb || row.correct_verb || ""
                 });
             }
         }
     });
-    console.log("Game Data Processed:", gameData); // 除錯用，可看資料有沒有抓對
 }
 
 function showScreen(screenId) {
@@ -242,28 +227,33 @@ function startTenseMaster() {
 
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
-    const container = document.getElementById('tm-question-display');
-    const step1Feedback = document.getElementById('tm-step1-feedback');
-    const step2Area = document.getElementById('tm-step2-area');
+    // 指向 HTML 中顯示方塊的容器
+    const container = document.getElementById('tm-question-display'); 
     
-    // 重置介面
+    // 重置畫面
     container.innerHTML = '';
-    step1Feedback.style.display = 'none';
-    step2Area.style.display = 'none';
-    document.getElementById('tm-next-btn').style.display = 'none';
-    document.getElementById('tm-final-feedback').innerText = '';
+    document.getElementById('tm-step1-feedback').style.display = 'none';
+    document.getElementById('tm-step2-area').style.display = 'none';
 
-    // Step 1: 顯示問句並拆解成單字方塊
-    const words = q.context.split(' '); // Google Sheet 中的問句放在 Context 欄位
+    // 檢查是否有抓到句子
+    if (!q.context) {
+        console.error("找不到題目句子，請檢查 Excel 的 Context 欄位");
+        return;
+    }
+
+    // 將 "Where did you go yesterday?" 拆成單字陣列
+    const words = q.context.trim().split(/\s+/); 
+
+    // 為每個單字建立一個盒子
     words.forEach(word => {
         const box = document.createElement('div');
         box.className = 'word-box';
         box.innerText = word;
-        box.onclick = () => handleMarkerClick(box, word, q.answer); // Marker 放在 Answer 欄位
+        // 點擊判定邏輯
+        box.onclick = () => handleMarkerClick(box, word, q.answer); 
         container.appendChild(box);
     });
 }
-
 function handleMarkerClick(element, clickedWord, correctMarker) {
     const cleanClicked = clickedWord.replace(/[?!.,]/g, "").toLowerCase();
     const cleanTarget = correctMarker.replace(/[?!.,]/g, "").toLowerCase();
