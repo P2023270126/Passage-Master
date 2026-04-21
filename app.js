@@ -131,9 +131,26 @@ function loadTenseQuestion() {
             contBtn.className = "next-btn"; // 使用你原本 CSS 裡的按鈕樣式
             contBtn.style.marginTop = "10px";
             contBtn.onclick = () => {
-                showTmOptions(q);
-                document.getElementById('tm-fill-blank-line').style.display = "block";
-                contBtn.remove(); // 進入 Step 2 後移除自己
+                contBtn.onclick = () => {
+    // 1. 執行 Step 2 的選項生成邏輯
+    showTmOptions(q);
+
+    // 2. 顯示原本隱藏的答題句 (帶有底線的那句)
+    const fillBlankLine = document.getElementById('tm-fill-blank-line');
+    if (fillBlankLine) {
+        fillBlankLine.style.display = "block";
+    }
+
+    // 3. 【重點】將原本點擊單字的區域替換為「藍色粗體」的完整句子
+    const qLine = document.getElementById('tm-question-line');
+    if (qLine) {
+        qLine.innerHTML = `<span style="color: #007bff; font-weight: bold; font-size: 1.25rem;">${q.context}</span>`;
+        qLine.style.borderBottom = "none"; // 移除底部分隔線，讓視覺更乾淨
+    }
+
+    // 4. 移除 Continue 按鈕
+    contBtn.remove();
+};
             };
             feedback.appendChild(document.createElement('br'));
             feedback.appendChild(contBtn);
