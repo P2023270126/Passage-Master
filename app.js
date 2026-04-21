@@ -116,28 +116,42 @@ function loadTenseQuestion() {
 
 function showTmOptions(q) {
     const optionsCont = document.getElementById('tm-options');
+    const feedback = document.getElementById('tm-feedback');
     optionsCont.innerHTML = "";
     document.getElementById('tm-step2-area').style.display = "block";
 
-    // 根據 Column F 嘅 "|" 嚟拆開按鈕
-    const opts = q.verbOptions.split('|').map(s => s.trim());
+    // --- 防錯檢查：確保 verbOptions 存在，否則畀個預設值 ---
+    const rawOptions = q.verbOptions || ""; 
+    
+    if (rawOptions === "") {
+        feedback.innerText = "⚠️ Error: No verb options found in Column F!";
+        feedback.style.color = "orange";
+        return;
+    }
+
+    // 分拆選項
+    const opts = rawOptions.split('|').map(s => s.trim());
+    
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = "letter-btn";
         btn.innerText = opt;
         btn.onclick = () => {
-            if (opt === q.finalAnswer) { // 對比 Column G
-                document.getElementById('tm-feedback').innerText = "✅ Correct! Well done!";
-                document.getElementById('tm-feedback').style.color = "green";
+            // 對比 Column G (finalAnswer)
+            if (opt === q.finalAnswer) {
+                feedback.innerText = "✅ Correct! Well done!";
+                feedback.style.color = "green";
                 tmState.correctCount++;
                 document.getElementById('tm-next-btn').style.display = "block";
+                optionsCont.style.pointerEvents = "none"; // 答啱咗就唔畀再撳
             } else {
-                document.getElementById('tm-feedback').innerText = "❌ Wrong! Try again.";
-                document.getElementById('tm-feedback').style.color = "red";
+                feedback.innerText = "❌ Wrong! Try again.";
+                feedback.style.color = "red";
             }
         };
         optionsCont.appendChild(btn);
     });
+    optionsCont.style.pointerEvents = "auto";
 }
 
 function showTmOptions(q) {
