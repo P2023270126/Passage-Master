@@ -88,16 +88,21 @@ function loadTenseQuestion() {
     document.getElementById('tm-next-btn').style.display = "none";
     document.getElementById('tm-instruction').innerText = "Step 1: Click the Time Marker (時態提示詞)";
 
-    // 處理句子：將提示詞變成可點擊
+    // --- 安全檢查：如果 Marker 冇填，就預設做空字串，防止 toLowerCase() 報錯 ---
+    const correctMarker = (q.marker || "").trim().toLowerCase();
+
     const words = q.context.split(' ');
     words.forEach(word => {
-        const cleanWord = word.replace(/[.,!?;:]/g, "");
+        const cleanWord = word.replace(/[.,!?;:]/g, "").trim().toLowerCase();
         const span = document.createElement('span');
         span.innerText = word + " ";
         span.className = "tm-marker";
+        
         span.onclick = () => {
             if (tmState.selectedMarker) return;
-            if (cleanWord.toLowerCase() === q.marker.toLowerCase()) {
+            
+            // 如果點中咗正確嘅 Marker
+            if (correctMarker !== "" && cleanWord === correctMarker) {
                 span.classList.add('selected');
                 tmState.selectedMarker = true;
                 feedback.innerText = "🎯 Marker Found! Now choose the verb form.";
