@@ -251,34 +251,70 @@ function startTenseMaster() {
     loadTenseQuestion();
 }
 
+// 初始化題目時，確保只看見 Step 1
 function loadTenseQuestion() {
     const q = tmState.questions[tmState.currentQuestionIndex];
-    // 指向 HTML 中顯示方塊的容器
-    const container = document.getElementById('tm-question-display'); 
     
-    // 重置畫面
+    // 1. 切換容器顯示狀態
+    document.getElementById('tm-step1-container').style.display = 'block';
+    document.getElementById('tm-step2-container').style.display = 'none';
+    
+    // 2. 清空並準備 Step 1
+    const container = document.getElementById('tm-sentence-container');
     container.innerHTML = '';
-    document.getElementById('tm-step1-feedback').style.display = 'none';
-    document.getElementById('tm-step2-area').style.display = 'none';
+    document.getElementById('tm-marker-msg').innerHTML = '';
+    document.getElementById('tm-continue-btn').style.display = 'none';
 
-    // 檢查是否有抓到句子
-    if (!q.context) {
-        console.error("找不到題目句子，請檢查 Excel 的 Context 欄位");
-        return;
-    }
-
-    // 將 "Where did you go yesterday?" 拆成單字陣列
-    const words = q.context.trim().split(/\s+/); 
-
-    // 為每個單字建立一個盒子
+    // 3. 建立單字按鈕
+    const words = q.context.split(' ');
     words.forEach(word => {
-        const box = document.createElement('div');
-        box.className = 'word-box';
-        box.innerText = word;
-        // 點擊判定邏輯
-        box.onclick = () => handleMarkerClick(box, word, q.answer); 
-        container.appendChild(box);
+        const btn = document.createElement('button');
+        btn.innerText = word;
+        btn.className = 'word-btn';
+        btn.onclick = () => checkMarker(btn, word, q.answer);
+        container.appendChild(btn);
     });
+}
+
+// 點擊 Continue 後觸發
+function goToStep2() {
+    const q = tmState.questions[tmState.currentQuestionIndex];
+    
+    // 1. 隱藏 Step 1，顯示 Step 2
+    document.getElementById('tm-step1-container').style.display = 'none';
+    document.getElementById('tm-step2-container').style.display = 'block';
+    
+    // 2. 設定 Step 2 的參考原句 (Step 1 的題目)
+    document.getElementById('tm-context-reference').innerText = q.context;
+    
+    // 3. 載入 Step 2 的選擇題
+    loadMCStep(q);
+}
+
+function loadMCStep(q) {
+    const clozeContainer = document.getElementById('tm-cloze-sentence');
+    const optionsContainer = document.getElementById('tm-options-container');
+    const feedback = document.getElementById('tm-final-feedback');
+    const nextBtn = document.getElementById('tm-next-btn');
+
+    // 清空舊內容
+    clozeContainer.innerText = q.correction; // 例如: "I ___ to the park yesterday."
+    optionsContainer.innerHTML = '';
+    feedback.innerHTML = '';
+    nextBtn.style.display = 'none';
+
+    // 生成選項按鈕
+    const rawOptions = q.options || "";
+    if (rawOptions) {
+        const opts = rawOptions.split('|');
+        opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.className = 'option-btn'; // 記得在 CSS 設定這個 class 的字體大小
+            btn.onclick = () => checkTMAnswer(btn, opt, q.correct_verb);
+            optionsContainer.appendChild(btn);
+        });
+    }
 }
 function handleMarkerClick(element, clickedWord, correctMarker) {
     const cleanClicked = clickedWord.replace(/[?!.,]/g, "").toLowerCase();
