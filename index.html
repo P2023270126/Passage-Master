@@ -78,30 +78,35 @@
         <button onclick="logout()">切換身份</button>
     </div>
 
-    <!-- Spelling -->
-    <div id="spelling-screen" class="screen" style="display:none;">
-        <h2 id="spelling-title">Spelling Game</h2>
-        <div class="filter-container">
-            <select id="spelling-category-filter" onchange="filterByCategory('Spelling')">
-                <option value="all">全部類別</option>
-            </select>
-        </div>
-        
-        <!-- 在字母按鈕容器 (例如 id="spelling-letters") 的後面加入 -->
-        <div style="text-align: center; margin-top: 15px;">
-            <button id="spelling-undo-btn" class="next-btn" style="background-color: #6c757d;">Undo ↩</button>
-        </div>
-        
-        <p id="spelling-sentence"></p>
-        <div id="spelling-word-display" style="min-height: 80px;"></div>
-        <div id="spelling-options" class="options-grid"></div>
-        <div id="spelling-feedback" style="display:none;">
-            <h3 id="feedback-text"></h3>
-            <button onclick="nextSpellingQuestion()">下一題</button>
-        </div>
-        <hr><button onclick="showScreen('menu-screen')">返回選單</button>
+<!-- Spelling Screen -->
+<div id="spelling-screen" class="screen" style="display:none;">
+    <h2 id="spelling-title">Spelling Game</h2>
+    
+    <!-- Remove the Undo button from here -->
+
+    <p id="spelling-sentence"></p>
+    <div id="spelling-word-display" style="min-height: 80px;"></div>
+    
+    <!-- 1. Word Choices -->
+    <div id="spelling-options" class="options-grid"></div>
+
+    <!-- 2. The New Large Undo Button (Correct Position) -->
+    <div style="text-align: center; margin: 30px 0;">
+        <button id="spelling-undo-btn" class="next-btn" style="background-color: #6c757d; transform: scale(1.5); padding: 10px 20px;">Undo ↩</button>
     </div>
 
+    <!-- 3. Feedback Area -->
+    <div id="spelling-feedback" style="display:none;">
+        <h3 id="feedback-text"></h3>
+        <button onclick="nextSpellingQuestion()">下一題</button>
+    </div>
+
+    <hr>
+    
+    <!-- 4. Back Button -->
+    <button onclick="showScreen('menu-screen')">返回選單</button>
+</div>
+    
     <!-- Rearrange -->
     <div id="rearrange-screen" class="screen" style="display:none;">
         <h2 id="rearrange-title">Sentence Rearrange</h2>
