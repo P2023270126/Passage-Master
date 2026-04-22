@@ -548,9 +548,22 @@ function updateCategoryDropdown(mode) {
 function filterByCategory(mode) {
     const dropdown = document.getElementById(`${mode.toLowerCase()}-category-filter`);
     const selectedCat = dropdown.value;
+    
+    // 1. 先過濾出題目
     let filtered = gameData[mode].filter(q => selectedCat === 'all' || q.category === selectedCat);
-    if (mode === 'Rearrange') { rearrangeState.questions = filtered; rearrangeState.currentQuestionIndex = 0; loadRearrangeQuestion(); }
-    else if (mode === 'Spelling') { spellingState.questions = filtered; spellingState.currentQuestionIndex = 0; n(); }
+    
+    // 2. 關鍵修改：將過濾後的題目進行亂序處理 (Shuffle)
+    const shuffled = [...filtered].sort(() => Math.random() - 0.5);
+
+    if (mode === 'Rearrange') {
+        rearrangeState.questions = shuffled; // 使用亂序後的題目
+        rearrangeState.currentQuestionIndex = 0;
+        loadRearrangeQuestion();
+    } else if (mode === 'Spelling') {
+        spellingState.questions = shuffled; // 使用亂序後的題目
+        spellingState.currentQuestionIndex = 0;
+        loadSpellingQuestion(); // 這裡原本你的圖中寫 n()，請改回正確的函數名
+    }
 }
 
 function speak(text) {
