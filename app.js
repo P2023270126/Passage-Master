@@ -267,7 +267,30 @@ function loadSpellingQuestion() {
 
     const targetWord = rawAnswer.toLowerCase().trim();
     spellingState.userAnswer = "";
+    spellingState.clickedButtons = []; // 加上這行，確保每題開始時紀錄是空的
 
+    function undoLastLetter() {
+        // 如果沒有點擊紀錄，就什麼都不做
+        if (!spellingState.clickedButtons || spellingState.clickedButtons.length === 0) return;
+    
+        // 1. 取得最後一個點擊的按鈕並恢復顯示
+        const lastBtn = spellingState.clickedButtons.pop();
+        lastBtn.style.visibility = "visible";
+    
+        // 2. 找到畫面上對應的底線格 (slot)，將它改回 "_"
+        const slots = document.querySelectorAll('.letter-slot');
+        const index = spellingState.userAnswer.length - 1;
+        if (slots[index]) {
+            slots[index].innerText = "_";
+        }
+    
+        // 3. 移除答案字串中的最後一個字
+        spellingState.userAnswer = spellingState.userAnswer.slice(0, -1);
+    }
+    
+    // 綁定 Undo 按鈕事件
+    document.getElementById('spelling-undo-btn').onclick = undoSpellingLetter;
+    
     // 顯示句子並替換單字為底線
     const displaySentence = item.context.replace(new RegExp(rawAnswer, 'gi'), "_______");
     document.getElementById('spelling-sentence').innerText = displaySentence;
@@ -297,12 +320,40 @@ function renderLetterButtons(answer, extraOptions) {
     });
 }
 
+function undoSpellingLetter() {
+    // 如果沒有點擊紀錄，或已經檢查結果了，就不能 Undo
+    const feedbackArea = document.getElementById('spelling-feedback');
+    if (!spellingState.clickedButtons || spellingState.clickedButtons.length === 0 || feedbackArea.style.display === 'block') return;
+
+    // 1. 取得最後一個點擊的按鈕並恢復顯示
+    const lastBtn = spellingState.clickedButtons.pop();
+    lastBtn.style.visibility = 'visible';
+
+    // 2. 找到畫面上對應的底線格 (slot)，將它改回 "_"
+    const slots = document.querySelectorAll('.letter-slot');
+    const index = spellingState.userAnswer.length - 1;
+    if (slots[index]) {
+        slots[index].innerText = "_";
+    }
+
+    // 3. 移除答案字串中的最後一個字
+    spellingState.userAnswer = spellingState.userAnswer.slice(0, -1);
+}
+
 function handleLetterClick(char, btn, correctAnswer) {
+    if (spellingState.userAnswer.length >= correctAnswer.length) return;
+
+    // 1. 存入紀錄並隱藏按鈕
+    spellingState.clickedButtons.push(btn);
+    btn.style.visibility = 'hidden'; 
+
+    // 2. 更新答案與顯示
     spellingState.userAnswer += char;
     const slots = document.querySelectorAll('.letter-slot');
     const currentIndex = spellingState.userAnswer.length - 1;
     if (slots[currentIndex]) slots[currentIndex].innerText = char;
-    btn.disabled = true;
+
+    // 3. 檢查答案
     if (spellingState.userAnswer.length === correctAnswer.length) {
         checkSpellingResult(correctAnswer);
     }
@@ -492,7 +543,7 @@ function filterByCategory(mode) {
     const selectedCat = dropdown.value;
     let filtered = gameData[mode].filter(q => selectedCat === 'all' || q.category === selectedCat);
     if (mode === 'Rearrange') { rearrangeState.questions = filtered; rearrangeState.currentQuestionIndex = 0; loadRearrangeQuestion(); }
-    else if (mode === 'Spelling') { spellingState.questions = filtered; spellingState.currentQuestionIndex = 0; loadSpellingQuestion(); }
+    else if (mode === 'Spelling') { spellingState.questions = filtered; spellingState.currentQuestionIndex = 0; n(); }
 }
 
 function speak(text) {
