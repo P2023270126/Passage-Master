@@ -289,7 +289,14 @@ function loadSpellingQuestion() {
     }
     
     // 綁定 Undo 按鈕事件
-    document.getElementById('spelling-undo-btn').onclick = undoSpellingLetter;
+    const undoBtn = document.getElementById('spelling-undo-btn');
+    undoBtn.onclick = undoLastLetter;
+    
+    // --- 在下方加入這幾行來放大按鈕 ---
+    undoBtn.style.transform = "scale(1.5)";   // 放大 1.5 倍 (50% larger)
+    undoBtn.style.marginTop = "30px";         // 增加上方間距，避免擠到字母按鈕
+    undoBtn.style.marginBottom = "30px";      // 增加下方間距，與底部分隔線保持距離
+    undoBtn.style.display = "inline-block";   // 確保 transform 縮放效果正常顯示
     
     // 顯示句子並替換單字為底線
     const displaySentence = item.context.replace(new RegExp(rawAnswer, 'gi'), "_______");
