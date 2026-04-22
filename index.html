@@ -82,6 +82,13 @@
 <div id="spelling-screen" class="screen" style="display:none;">
     <h2 id="spelling-title">Spelling Game</h2>
     
+    <!-- 確認這段 filter-container 是否還在 -->
+    <div class="filter-container">
+        <select id="spelling-category-filter" onchange="filterByCategory('Spelling')">
+            <option value="all">全部類別</option>
+        </select>
+    </div>
+    
     <!-- Remove the Undo button from here -->
 
     <p id="spelling-sentence"></p>
