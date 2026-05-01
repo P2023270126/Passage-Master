@@ -377,9 +377,17 @@ function checkSpellingResult(correctAnswer) {
 }
 
 function checkSpellingResult(correctAnswer) {
+    // 1. 先執行發音 (這行最重要！)
+    speak(correctAnswer); 
+
+    // 2. 獲取 UI 元素
     const feedbackArea = document.getElementById('spelling-feedback');
     const feedbackText = document.getElementById('feedback-text');
+    
+    // 3. 鎖定按鈕防止重複點擊
     document.getElementById('spelling-options').style.pointerEvents = 'none';
+
+    // 4. 判斷對錯
     if (spellingState.userAnswer === correctAnswer) {
         feedbackText.innerText = "✅ Correct!";
         feedbackText.style.color = "#28a745";
@@ -388,6 +396,8 @@ function checkSpellingResult(correctAnswer) {
         feedbackText.innerText = `❌ ${correctAnswer}`;
         feedbackText.style.color = "#dc3545";
     }
+
+    // 5. 顯示反饋區塊
     feedbackArea.style.display = 'block';
 }
 
@@ -578,6 +588,7 @@ function filterByCategory(mode) {
 
 function speak(text) {
     if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // 先停止之前的發音，避免重疊
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
         utterance.rate = 0.8;
