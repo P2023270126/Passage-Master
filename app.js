@@ -367,6 +367,16 @@ function handleLetterClick(char, btn, correctAnswer) {
 }
 
 function checkSpellingResult(correctAnswer) {
+    // --- 在這裡加入這行 ---
+    speak(correctAnswer); 
+    // ----------------------
+
+    const feedbackArea = document.getElementById('spelling-feedback');
+    const feedbackText = document.getElementById('feedback-text');
+    // ... 後面的邏輯保持不變 ...
+}
+
+function checkSpellingResult(correctAnswer) {
     const feedbackArea = document.getElementById('spelling-feedback');
     const feedbackText = document.getElementById('feedback-text');
     document.getElementById('spelling-options').style.pointerEvents = 'none';
@@ -570,7 +580,7 @@ function speak(text) {
     if ('speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        utterance.rate = 0.9;
+        utterance.rate = 0.8;
         window.speechSynthesis.speak(utterance);
     }
 }
